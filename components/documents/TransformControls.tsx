@@ -6,6 +6,7 @@ import {
   DEFAULT_DOCUMENT_TRANSFORM,
   type DocumentTransform,
 } from "@/lib/documents/transforms";
+import { RotateCcw, Check, Maximize, RotateCw, ArrowUpDown } from "lucide-react";
 
 interface TransformControlsProps {
   pending: DocumentTransform;
@@ -23,6 +24,7 @@ interface SliderRowProps {
   max: number;
   step: number;
   unit?: string;
+  icon?: React.ComponentType<{ className?: string }>;
   onChange: (value: number) => void;
 }
 
@@ -33,13 +35,17 @@ function SliderRow({
   max,
   step,
   unit = "",
+  icon: Icon,
   onChange,
 }: SliderRowProps) {
   return (
-    <label className="block space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="font-medium">{label}</span>
-        <span className="text-zinc-500">
+    <label className="block space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium">
+          {Icon && <Icon className="h-3 w-3 text-muted-foreground" />}
+          {label}
+        </span>
+        <span className="text-xs tabular-nums text-muted-foreground">
           {value.toFixed(step < 1 ? 2 : 0)}
           {unit}
         </span>
@@ -51,7 +57,7 @@ function SliderRow({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="h-2 w-full cursor-pointer accent-foreground"
+        className="h-1.5 w-full cursor-pointer rounded-full bg-zinc-200 accent-primary dark:bg-zinc-700"
       />
     </label>
   );
@@ -77,10 +83,7 @@ export function TransformControls({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <p className="text-sm font-medium">Transform controls</p>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-        Adjust values, then confirm before each change is applied.
-      </p>
+      <p className="text-sm font-semibold tracking-tight">Transform</p>
 
       <div className="space-y-3">
         <SliderRow
@@ -89,8 +92,8 @@ export function TransformControls({
           min={0.5}
           max={2}
           step={0.05}
-          unit="×"
-          onChange={(scale) => update({ scale })}
+          icon={Maximize}
+          onChange={(v) => update({ scale: v })}
         />
         <SliderRow
           label="Rotation"
@@ -99,48 +102,51 @@ export function TransformControls({
           max={45}
           step={1}
           unit="°"
-          onChange={(rotationDeg) => update({ rotationDeg })}
+          icon={RotateCw}
+          onChange={(v) => update({ rotationDeg: v })}
         />
         <SliderRow
-          label="Warp X (skew)"
+          label="Skew X"
           value={pending.skewX}
-          min={-0.3}
-          max={0.3}
-          step={0.01}
-          onChange={(skewX) => update({ skewX })}
+          min={-30}
+          max={30}
+          step={1}
+          unit="°"
+          icon={ArrowUpDown}
+          onChange={(v) => update({ skewX: v })}
         />
         <SliderRow
-          label="Warp Y (skew)"
+          label="Skew Y"
           value={pending.skewY}
-          min={-0.3}
-          max={0.3}
-          step={0.01}
-          onChange={(skewY) => update({ skewY })}
+          min={-30}
+          max={30}
+          step={1}
+          unit="°"
+          icon={ArrowUpDown}
+          onChange={(v) => update({ skewY: v })}
         />
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex gap-2">
         <Button
-          onClick={onRequestApply}
-          disabled={!hasPendingChanges}
-          className="min-h-11 flex-1"
-        >
-          Apply adjustment…
-        </Button>
-        <Button
+          size="sm"
           variant="outline"
           onClick={onReset}
-          className="min-h-11"
+          className="gap-1.5"
         >
+          <RotateCcw className="h-3.5 w-3.5" />
           Reset
         </Button>
+        <Button
+          size="sm"
+          onClick={onRequestApply}
+          disabled={!hasPendingChanges}
+          className="gap-1.5"
+        >
+          <Check className="h-3.5 w-3.5" />
+          Apply Transform
+        </Button>
       </div>
-
-      {hasPendingChanges && (
-        <p className="text-xs text-amber-700 dark:text-amber-300">
-          Unconfirmed changes — preview only until you apply.
-        </p>
-      )}
     </div>
   );
 }

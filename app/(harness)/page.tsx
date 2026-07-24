@@ -2,7 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Shield, ClipboardCheck, Loader2 } from "lucide-react";
+import {
+  Camera,
+  Shield,
+  ClipboardCheck,
+  Loader2,
+  Play,
+  Smartphone,
+  ArrowRight,
+  Sparkles,
+  Activity,
+  FileJson,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
 import { useSessionStore } from "@/lib/session/store";
 
@@ -47,7 +59,9 @@ export default function HomePage() {
     try {
       const data = await createSession();
       setSessionId(data.sessionId);
-      toast.success("QA session created");
+      toast.success("QA session created", {
+        description: "Redirecting to liveness capture...",
+      });
       startTransition(() => {
         router.push(`/verify/${data.sessionId}`);
       });
@@ -65,7 +79,9 @@ export default function HomePage() {
     try {
       const data = await createSession();
       setSessionId(data.sessionId);
-      toast.success("Companion session created");
+      toast.success("Companion session created", {
+        description: "Redirecting to controller...",
+      });
       startTransition(() => {
         router.push(`/controller/${data.sessionId}`);
       });
@@ -76,39 +92,61 @@ export default function HomePage() {
     }
   };
 
+  const isDisabled = isStarting || isStartingCompanion;
+
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center px-4 py-12">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">KYC-Verify</h1>
-        <p className="mt-3 text-lg text-muted-foreground">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 py-10 sm:py-16">
+      {/* Hero Section */}
+      <div className="mb-10 text-center sm:mb-14">
+        <Badge
+          variant="warning"
+          className="mb-4 gap-1 px-3 py-1 text-xs font-medium"
+        >
+          <Shield className="h-3 w-3" />
+          QA Environment — Not for production
+        </Badge>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          KYC-Verify
+        </h1>
+        <p className="mx-auto mt-4 max-w-lg text-base text-muted-foreground sm:text-lg">
           Internal QA harness for testing KYC provider liveness integrations
+          with simulated behavioral signals
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="transition-shadow hover:shadow-md">
+      {/* Feature Cards */}
+      <div className="mb-10 grid gap-4 sm:grid-cols-3">
+        <Card className="group relative overflow-hidden border-zinc-200/60 bg-gradient-to-b from-transparent to-emerald-500/[0.03] transition-all hover:border-emerald-500/30 hover:shadow-md dark:border-zinc-800/60 dark:to-emerald-500/[0.05]">
           <CardHeader>
-            <Camera className="mb-2 h-6 w-6 text-muted-foreground" />
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20">
+              <Camera className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
             <CardTitle className="text-base">Liveness Simulation</CardTitle>
             <CardDescription>
-              Run standard blink, head-turn, and smile prompts against your
-              webcam.
+              Run blink, head-turn, and smile prompts against your webcam with
+              real-time face tracking.
             </CardDescription>
           </CardHeader>
         </Card>
-        <Card className="transition-shadow hover:shadow-md">
+
+        <Card className="group relative overflow-hidden border-zinc-200/60 bg-gradient-to-b from-transparent to-amber-500/[0.03] transition-all hover:border-amber-500/30 hover:shadow-md dark:border-zinc-800/60 dark:to-amber-500/[0.05]">
           <CardHeader>
-            <Shield className="mb-2 h-6 w-6 text-muted-foreground" />
-            <CardTitle className="text-base">QA Only</CardTitle>
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
+              <Activity className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <CardTitle className="text-base">Real-time Analytics</CardTitle>
             <CardDescription>
-              Outputs simulated signals for integration testing—not production
-              identity verification.
+              Monitor pass rates, confidence scores, head rotation, and blink
+              intervals across sessions.
             </CardDescription>
           </CardHeader>
         </Card>
-        <Card className="transition-shadow hover:shadow-md">
+
+        <Card className="group relative overflow-hidden border-zinc-200/60 bg-gradient-to-b from-transparent to-blue-500/[0.03] transition-all hover:border-blue-500/30 hover:shadow-md dark:border-zinc-800/60 dark:to-blue-500/[0.05]">
           <CardHeader>
-            <ClipboardCheck className="mb-2 h-6 w-6 text-muted-foreground" />
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 ring-1 ring-blue-500/20">
+              <FileJson className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
             <CardTitle className="text-base">Audit Export</CardTitle>
             <CardDescription>
               Download structured JSON with prompt results, document QA state,
@@ -118,51 +156,77 @@ export default function HomePage() {
         </Card>
       </div>
 
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Start a test session</CardTitle>
+      {/* CTA Section */}
+      <Card className="border-zinc-200/60 shadow-sm sm:mx-auto sm:max-w-2xl dark:border-zinc-800/60">
+        <CardHeader className="text-center sm:text-left">
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-amber-500" />
+            Start a test session
+          </CardTitle>
           <CardDescription>
-            Requires a webcam and a modern browser. Sessions resume after refresh
-            via session storage. Use companion mode for Android emulator pairing.
+            Requires a webcam and a modern browser. Sessions resume after
+            refresh via session storage. Use companion mode for Android emulator
+            pairing over ADB.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <CardContent className="space-y-4">
           {error ? (
-            <p className="w-full rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
+            <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <Shield className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>{error}</p>
+            </div>
           ) : null}
-          <Button
-            size="lg"
-            onClick={startSession}
-            disabled={isStarting || isStartingCompanion}
-          >
-            {isStarting ? (
-              <>
-                <Loader2 className="animate-spin" />
-                Starting...
-              </>
-            ) : (
-              "Start QA Session"
-            )}
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={startCompanionSession}
-            disabled={isStarting || isStartingCompanion}
-          >
-            {isStartingCompanion ? (
-              <>
-                <Loader2 className="animate-spin" />
-                Starting...
-              </>
-            ) : (
-              "Start with Mobile Companion"
-            )}
-          </Button>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              size="lg"
+              onClick={startSession}
+              disabled={isDisabled}
+              className="group flex-1 gap-2"
+            >
+              {isStarting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating session...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 transition-transform group-hover:scale-110" />
+                  Start QA Session
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </>
+              )}
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={startCompanionSession}
+              disabled={isDisabled}
+              className="group flex-1 gap-2"
+            >
+              {isStartingCompanion ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating session...
+                </>
+              ) : (
+                <>
+                  <Smartphone className="h-4 w-4 transition-transform group-hover:scale-110" />
+                  Start with Mobile Companion
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Footer note */}
+      <p className="mx-auto mt-8 max-w-md text-center text-xs text-muted-foreground">
+        <ClipboardCheck className="-mt-0.5 mr-1 inline h-3 w-3" />
+        Outputs simulated signals for integration testing — not production
+        identity verification.
+      </p>
     </div>
   );
 }

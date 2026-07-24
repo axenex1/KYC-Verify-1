@@ -110,40 +110,52 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
         </Button>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden border-zinc-200/60 dark:border-zinc-800/60">
         <CardHeader>
           <div className="flex flex-wrap items-center gap-3">
             <CardTitle>Session Detail</CardTitle>
-            <Badge variant={passRate >= 1 ? "success" : passRate >= 0.5 ? "warning" : "destructive"}>
+            <Badge
+              variant={
+                passRate >= 1 ? "success" : passRate >= 0.5 ? "warning" : "destructive"
+              }
+            >
               {Math.round(passRate * 100)}% pass rate
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-          <div>
-            <p className="text-zinc-500">Session ID</p>
-            <code className="text-xs">{exportData.sessionId}</code>
-          </div>
-          <div>
-            <p className="text-zinc-500">Started</p>
-            <p>{new Date(exportData.createdAt).toLocaleString()}</p>
-          </div>
-          <div>
-            <p className="text-zinc-500">Completed</p>
-            <p>
-              {exportData.completedAt
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Session ID", value: exportData.sessionId.slice(0, 18) + "…", mono: true },
+            {
+              label: "Started",
+              value: new Date(exportData.createdAt).toLocaleString(),
+            },
+            {
+              label: "Completed",
+              value: exportData.completedAt
                 ? new Date(exportData.completedAt).toLocaleString()
-                : "—"}
-            </p>
-          </div>
-          <div>
-            <p className="text-zinc-500">Platform</p>
-            <p>{exportData.device?.platform ?? "Unknown"}</p>
-          </div>
+                : "—",
+            },
+            {
+              label: "Platform",
+              value: exportData.device?.platform ?? "Unknown",
+            },
+          ].map((item) => (
+            <div key={item.label}>
+              <p className="text-xs font-medium text-muted-foreground">
+                {item.label}
+              </p>
+              {item.mono ? (
+                <code className="text-xs font-mono">{item.value}</code>
+              ) : (
+                <p className="text-sm">{item.value}</p>
+              )}
+            </div>
+          ))}
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-zinc-200/60 dark:border-zinc-800/60">
         <CardHeader>
           <CardTitle>Prompt Results</CardTitle>
         </CardHeader>
@@ -151,12 +163,15 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
           {exportData.promptResults.map((result) => (
             <div
               key={result.prompt}
-              className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800"
+              className="flex items-center justify-between rounded-lg border border-zinc-200/60 px-4 py-3 transition-colors hover:bg-zinc-50/50 dark:border-zinc-800/60 dark:hover:bg-zinc-900/50"
             >
               <span className="text-sm font-medium capitalize">
                 {result.prompt.replace(/_/g, " ")}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {Math.round(result.confidence * 100)}%
+                </span>
                 <Badge variant={result.passed ? "success" : "destructive"}>
                   {result.passed ? "Pass" : "Fail"}
                 </Badge>
