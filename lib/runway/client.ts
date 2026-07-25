@@ -5,6 +5,7 @@ const RUNWAY_API_BASE =
 const DEFAULT_RUNWAY_MODEL = "gen4_image";
 const RUNWAY_POLL_TIMEOUT_MS = 90_000;
 const RUNWAY_POLL_INTERVAL_MS = 1_500;
+const ERROR_SNIPPET_MAX_LENGTH = 240;
 
 type GenerationMode = "selfie_to_au_license" | "au_license_to_avatar";
 
@@ -151,7 +152,7 @@ export async function generateRunwayImage({
     throw new Error(
       `Runway task creation failed (${createResponse.status}): ${errorBody.slice(
         0,
-        240
+        ERROR_SNIPPET_MAX_LENGTH
       )}`
     );
   }
@@ -184,7 +185,10 @@ export async function generateRunwayImage({
     if (!pollResponse.ok) {
       const body = await pollResponse.text();
       throw new Error(
-        `Runway task poll failed (${pollResponse.status}): ${body.slice(0, 240)}`
+        `Runway task poll failed (${pollResponse.status}): ${body.slice(
+          0,
+          ERROR_SNIPPET_MAX_LENGTH
+        )}`
       );
     }
 

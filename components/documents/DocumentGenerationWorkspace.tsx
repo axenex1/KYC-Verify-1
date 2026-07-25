@@ -46,6 +46,12 @@ export function DocumentGenerationWorkspace({
       : "Upload an Australian license image to generate a portrait avatar.";
   }, [mode]);
 
+  const resultAltText = useMemo(() => {
+    return mode === "selfie_to_au_license"
+      ? "Generated synthetic Australian driver license card image"
+      : "Generated avatar portrait from Australian driver license image";
+  }, [mode]);
+
   const handleFileChange = async (file: File | null) => {
     setError(null);
     setResult(null);
@@ -266,7 +272,7 @@ export function DocumentGenerationWorkspace({
           </p>
           <img
             src={result.imageUrl}
-            alt={`Generated output for ${modeLabel}`}
+            alt={resultAltText}
             className="aspect-video w-full rounded-lg border border-zinc-200 object-contain dark:border-zinc-800"
           />
           <div className="flex flex-wrap items-center gap-2">
