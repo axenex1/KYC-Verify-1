@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRightLeft, Loader2, Sparkles, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,24 @@ interface DocumentGenerationWorkspaceProps {
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+const TRUSTED_RESULT_HOSTS = [
+  "runwayml.com",
+  "cdn.runwayml.com",
+  "runwaycdn.com",
+  "storage.googleapis.com",
+];
+
+function isTrustedResultUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:") return false;
+    return TRUSTED_RESULT_HOSTS.some(
+      (host) => parsed.hostname === host || parsed.hostname.endsWith(`.${host}`)
+    );
+  } catch {
+    return false;
+  }
+}
 
 export function DocumentGenerationWorkspace({
   sessionId,
@@ -29,6 +47,7 @@ export function DocumentGenerationWorkspace({
 }: DocumentGenerationWorkspaceProps) {
   const [mode, setMode] = useState<GenerationMode>("selfie_to_au_license");
   const [sourceImageDataUrl, setSourceImageDataUrl] = useState<string | null>(null);
+  const [sourcePreviewUrl, setSourcePreviewUrl] = useState<string | null>(null);
   const [sourceFileName, setSourceFileName] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,9 +71,22 @@ export function DocumentGenerationWorkspace({
       : "Generated avatar portrait from Australian driver license image";
   }, [mode]);
 
+  useEffect(() => {
+    return () => {
+      if (sourcePreviewUrl) {
+        URL.revokeObjectURL(sourcePreviewUrl);
+      }
+    };
+  }, [sourcePreviewUrl]);
+
   const handleFileChange = async (file: File | null) => {
     setError(null);
     setResult(null);
+
+    if (sourcePreviewUrl) {
+      URL.revokeObjectURL(sourcePreviewUrl);
+      setSourcePreviewUrl(null);
+    }
 
     if (!file) {
       setSourceImageDataUrl(null);
@@ -88,6 +120,7 @@ export function DocumentGenerationWorkspace({
 
       setSourceImageDataUrl(value);
       setSourceFileName(file.name);
+      setSourcePreviewUrl(URL.createObjectURL(file));
       auditLogger.log("runway_source_uploaded", {
         mode,
         fileName: file.name,
@@ -140,6 +173,10 @@ export function DocumentGenerationWorkspace({
         const message =
           payload.error ?? "Generation failed. Please retry in a few seconds.";
         throw new Error(message);
+      }
+
+      if (!isTrustedResultUrl(payload.imageUrl)) {
+        throw new Error("Generation returned an untrusted image URL.");
       }
 
       const generatedResult: GenerationResult = {
@@ -214,7 +251,7 @@ export function DocumentGenerationWorkspace({
             Source: {sourceFileName ?? "uploaded image"}
           </p>
           <img
-            src={sourceImageDataUrl}
+            src={sourcePreviewUrl ?? sourceImageDataUrl}
             alt={`Source preview for ${modeLabel}`}
             className="aspect-video w-full rounded-lg border border-zinc-200 object-contain dark:border-zinc-800"
           />
@@ -247,7 +284,11 @@ export function DocumentGenerationWorkspace({
           variant="outline"
           className="min-h-11"
           onClick={() => {
+            if (sourcePreviewUrl) {
+              URL.revokeObjectURL(sourcePreviewUrl);
+            }
             setSourceImageDataUrl(null);
+            setSourcePreviewUrl(null);
             setSourceFileName(null);
             setResult(null);
             setError(null);
