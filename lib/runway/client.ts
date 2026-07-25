@@ -1,7 +1,10 @@
 import { setTimeout as delay } from "timers/promises";
 
-const RUNWAY_API_BASE = "https://api.dev.runwayml.com/v1";
+const RUNWAY_API_BASE =
+  process.env.RUNWAY_API_BASE || "https://api.dev.runwayml.com/v1";
 const DEFAULT_RUNWAY_MODEL = "gen4_image";
+const RUNWAY_POLL_TIMEOUT_MS = 90_000;
+const RUNWAY_POLL_INTERVAL_MS = 1_500;
 
 type GenerationMode = "selfie_to_au_license" | "au_license_to_avatar";
 
@@ -167,11 +170,11 @@ export async function generateRunwayImage({
     }
   }
 
-  const pollDeadline = Date.now() + 90_000;
+  const pollDeadline = Date.now() + RUNWAY_POLL_TIMEOUT_MS;
   let lastStatus = created.status ?? "pending";
 
   while (Date.now() < pollDeadline) {
-    await delay(1500);
+    await delay(RUNWAY_POLL_INTERVAL_MS);
 
     const pollResponse = await fetchWithRetry(`${RUNWAY_API_BASE}/tasks/${taskId}`, {
       method: "GET",

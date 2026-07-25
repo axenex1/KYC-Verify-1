@@ -35,6 +35,8 @@ Configure server-side Runway access:
 RUNWAY_API_KEY=your_runway_api_key
 # Optional override (default: gen4_image)
 RUNWAY_MODEL=gen4_image
+# Optional API base override (default: https://api.dev.runwayml.com/v1)
+RUNWAY_API_BASE=https://api.dev.runwayml.com/v1
 ```
 
 ### Operational limits and behavior

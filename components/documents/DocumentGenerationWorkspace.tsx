@@ -271,7 +271,7 @@ export function DocumentGenerationWorkspace({
           />
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" size="sm">
-              <a href={result.imageUrl} target="_blank" rel="noreferrer">
+              <a href={result.imageUrl} target="_blank" rel="noopener noreferrer">
                 <Upload className="h-4 w-4" />
                 Open Result
               </a>

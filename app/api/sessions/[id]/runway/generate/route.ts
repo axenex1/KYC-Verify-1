@@ -9,15 +9,23 @@ interface RouteParams {
 }
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_DATA_URL_LENGTH = 12_000_000;
 const DATA_URL_PATTERN =
   /^data:(image\/png|image\/jpeg|image\/webp);base64,([A-Za-z0-9+/=]+)$/;
 
 const GenerateSchema = z.object({
   mode: z.enum(["selfie_to_au_license", "au_license_to_avatar"]),
-  imageDataUrl: z.string().min(64).max(12_000_000),
+  imageDataUrl: z.string().min(64).max(MAX_DATA_URL_LENGTH),
 });
 
 function parseAndValidateDataUrl(imageDataUrl: string) {
+  if (imageDataUrl.length > MAX_DATA_URL_LENGTH) {
+    return {
+      ok: false as const,
+      reason: "Image payload is too large.",
+    };
+  }
+
   const match = imageDataUrl.match(DATA_URL_PATTERN);
   if (!match) {
     return {
@@ -27,7 +35,12 @@ function parseAndValidateDataUrl(imageDataUrl: string) {
   }
 
   const base64Payload = match[2] ?? "";
-  const bytes = Buffer.from(base64Payload, "base64").byteLength;
+  const padding = base64Payload.endsWith("==")
+    ? 2
+    : base64Payload.endsWith("=")
+      ? 1
+      : 0;
+  const bytes = Math.floor((base64Payload.length * 3) / 4) - padding;
   if (bytes === 0 || bytes > MAX_IMAGE_BYTES) {
     return {
       ok: false as const,
