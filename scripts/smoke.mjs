@@ -6,7 +6,7 @@
  */
 const base = process.argv[2] ?? "http://127.0.0.1:3000";
 
-const routes = ["/", "/dashboard", "/dev/ui"];
+const routes = ["/", "/dashboard", "/prompt-sets", "/dev/ui"];
 
 async function check(path) {
   const res = await fetch(`${base}${path}`, { redirect: "follow" });
@@ -45,11 +45,24 @@ async function checkSessionCreate() {
   }
 }
 
+async function checkPromptSetsApi() {
+  const res = await fetch(`${base}/api/prompt-sets`);
+  if (!res.ok) {
+    throw new Error(`GET /api/prompt-sets → ${res.status}`);
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) {
+    throw new Error("GET /api/prompt-sets did not return an array");
+  }
+  console.log(`OK GET /api/prompt-sets (${data.length} sets)`);
+}
+
 async function main() {
   for (const route of routes) {
     await check(route);
   }
   await checkSessionCreate();
+  await checkPromptSetsApi();
   console.log("\nVERIFIED: harness smoke passed");
 }
 
