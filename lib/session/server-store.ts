@@ -2,7 +2,7 @@ import type { SessionExport } from "@/types/session";
 
 export interface ServerSession {
   sessionId: string;
-  environment: "qa";
+  environment: "application";
   promptSet: string;
   createdAt: string;
   completedAt?: string;
@@ -17,7 +17,7 @@ export function createServerSession(
 ): ServerSession {
   const session: ServerSession = {
     sessionId,
-    environment: "qa",
+    environment: "application",
     promptSet,
     createdAt: new Date().toISOString(),
   };

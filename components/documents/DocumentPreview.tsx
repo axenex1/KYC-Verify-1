@@ -54,7 +54,7 @@ export function DocumentPreview({
       )}
       <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
         <span className="rounded-full bg-red-600/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-          QA Test — Not Valid ID
+          Demo Template — Not Valid ID
         </span>
       </div>
     </div>

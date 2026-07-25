@@ -11,7 +11,7 @@ export function ProfileSummary({ insights }: ProfileSummaryProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>QA Profile Summary</CardTitle>
+        <CardTitle>Profile Summary</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="mb-4 text-sm text-zinc-500">

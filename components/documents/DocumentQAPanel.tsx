@@ -122,7 +122,7 @@ export function DocumentQAPanel({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Document Capture QA</CardTitle>
+          <CardTitle className="text-base">Document Capture Review</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <DocumentTemplatePicker

@@ -75,7 +75,7 @@ export function DashboardView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-zinc-500">
-          Monitoring QA liveness sessions on this server instance
+          Monitoring verification sessions on this server instance
         </p>
         <Button variant="outline" size="sm" onClick={() => loadSummary()} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />

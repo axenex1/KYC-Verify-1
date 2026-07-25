@@ -2,7 +2,7 @@
   "name": "kyc-verify-1",
   "version": "0.1.0",
   "private": true,
-  "description": "KYC-Verify | QA Liveness Harness — desktop-first interactive UI",
+  "description": "KYC-Verify | Verification platform — desktop-first interactive UI",
   "scripts": {
     "dev": "next dev",
     "dev:sync": "tsx scripts/sync-server.ts",

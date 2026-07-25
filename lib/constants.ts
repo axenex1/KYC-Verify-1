@@ -1,4 +1,4 @@
-export const QA_ENVIRONMENT = "qa" as const;
+export const APPLICATION_ENVIRONMENT = "application" as const;
 
 export const MEDIAPIPE_WASM_PATH =
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";

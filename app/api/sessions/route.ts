@@ -9,7 +9,7 @@ import { toSessionListItem } from "@/lib/dashboard/aggregations";
 import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
 
 const CreateSessionSchema = z.object({
-  mode: z.literal("qa"),
+  mode: z.literal("verification"),
   promptSet: z.string().default(STANDARD_PROMPT_SET),
 });
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       sessionId,
       createdAt,
-      environment: "qa" as const,
+      environment: "application" as const,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

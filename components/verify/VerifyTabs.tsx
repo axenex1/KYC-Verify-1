@@ -13,7 +13,7 @@ interface VerifyTabsProps {
 export function VerifyTabs({ active, onChange, className }: VerifyTabsProps) {
   const tabs: { id: VerifyTab; label: string }[] = [
     { id: "liveness", label: "Liveness" },
-    { id: "document", label: "Document QA" },
+    { id: "document", label: "Document Review" },
   ];
 
   return (
@@ -23,7 +23,7 @@ export function VerifyTabs({ active, onChange, className }: VerifyTabsProps) {
         className
       )}
       role="tablist"
-      aria-label="QA session modes"
+      aria-label="Verification session modes"
     >
       {tabs.map((tab) => (
         <button

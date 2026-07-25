@@ -1,6 +1,6 @@
-# KYC-Verify QA Liveness Harness
+# KYC-Verify Verification Platform
 
-Desktop-first internal QA tool for testing KYC provider liveness integrations with simulated behavioral signals.
+Desktop-first verification application for identity capture, document review, companion orchestration, and session analytics.
 
 ## Stack
 
@@ -26,9 +26,9 @@ npm run dist:win     # Windows NSIS package
 
 | Path | Purpose |
 |------|---------|
-| `/` | Create QA or companion session |
-| `/verify/[sessionId]` | Liveness capture |
-| `/controller/[sessionId]` | Desktop companion + document QA |
+| `/` | Create verification or companion session |
+| `/verify/[sessionId]` | Verification capture |
+| `/controller/[sessionId]` | Desktop companion + document review |
 | `/dashboard` | Session analytics |
 | `/dev/ui` | Internal component lab |
 
@@ -38,4 +38,4 @@ npm run dist:win     # Windows NSIS package
 2. **Preferences** — `lib/preferences/store.ts` → `localStorage` key `kyc-verify-preferences`
 3. **Ephemeral** — React state/refs for camera, WebRTC, dialogs
 
-Do not mix session QA payloads with preference keys.
+Do not mix session payloads with preference keys.

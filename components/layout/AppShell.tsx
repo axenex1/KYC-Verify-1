@@ -13,7 +13,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSessionStore } from "@/lib/session/store";
-import { QaModeBanner } from "@/components/qa/QaModeBanner";
 
 const navItems = [
   { href: "/", label: "Capture", icon: Camera, match: (p: string) => p === "/" },
@@ -27,10 +26,9 @@ const navItems = [
 
 interface AppShellProps {
   children: React.ReactNode;
-  showQaBanner?: boolean;
 }
 
-export function AppShell({ children, showQaBanner = true }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const sessionId = useSessionStore((s) => s.sessionId);
   const status = useSessionStore((s) => s.status);
@@ -40,7 +38,6 @@ export function AppShell({ children, showQaBanner = true }: AppShellProps) {
 
   return (
     <div className="flex min-h-full flex-col bg-background">
-      {showQaBanner ? <QaModeBanner /> : null}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex h-12 max-w-[1600px] items-center gap-3 px-4">
           <Link
