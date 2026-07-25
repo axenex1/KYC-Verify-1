@@ -28,9 +28,9 @@ export interface RunwayGenerateResult {
 
 function getModePrompt(mode: GenerationMode): string {
   if (mode === "selfie_to_au_license") {
-    return "Convert this selfie into a realistic synthetic Australian driver's licence card photo. Keep a neutral studio capture look, preserve identity resemblance, and ensure the card appears clearly synthetic and non-official.";
+    return "Convert this selfie into a realistic synthetic Australian driver's license card photo. Keep a neutral studio capture look, preserve identity resemblance, and ensure the card appears clearly synthetic and non-official.";
   }
-  return "Convert this Australian driver's licence card photo into a clean realistic avatar portrait with neutral lighting and background.";
+  return "Convert this Australian driver's license card photo into a clean realistic avatar portrait with neutral lighting and background.";
 }
 
 function getRunwayHeaders(apiKey: string) {

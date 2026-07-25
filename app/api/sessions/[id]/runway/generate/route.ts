@@ -127,14 +127,20 @@ export async function POST(request: Request, { params }: RouteParams) {
       taskId: result.taskId,
     });
   } catch (error) {
-    const message =
+    const rawMessage =
       error instanceof Error ? error.message : "Generation service failure";
+    const message = rawMessage.slice(0, 240);
 
     const hasRunwayConfigError = message.includes("RUNWAY_API_KEY");
     const status = hasRunwayConfigError ? 503 : 502;
     const code = hasRunwayConfigError
       ? "RUNWAY_NOT_CONFIGURED"
       : "RUNWAY_GENERATION_FAILED";
+    const sanitizedReason = hasRunwayConfigError
+      ? "missing_configuration"
+      : message.includes("timed out")
+        ? "provider_timeout"
+        : "provider_failure";
 
     console.error(
       JSON.stringify({
@@ -144,7 +150,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         sessionId: id,
         mode: parsed.data.mode,
         durationMs: Date.now() - startedAt,
-        message,
+        reason: sanitizedReason,
       })
     );
 
