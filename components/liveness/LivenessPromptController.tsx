@@ -464,6 +464,7 @@ export function LivenessPromptController({
         </div>
       ) : (
         <DocumentQAPanel
+          sessionId={sessionId}
           auditLogger={auditLogger}
           onStateChange={(state) => {
             setDocumentQAState(state);
