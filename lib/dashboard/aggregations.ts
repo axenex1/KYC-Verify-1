@@ -5,11 +5,13 @@ import type {
   HeatmapCell,
   ProfileInsight,
   PromptAggregate,
+  RegressionStatus,
   SessionListItem,
   TimelineEvent,
 } from "@/types/dashboard";
 import type { SessionExport } from "@/types/session";
 import { LIVENESS_PROMPTS } from "@/lib/session/prompts";
+import { REGRESSION_BASELINES } from "@/lib/regression/baselines";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -329,6 +331,58 @@ function buildProfileInsights(
   return insights;
 }
 
+function buildRegressionStatus(
+  sessions: ServerSession[],
+  promptAggregates: PromptAggregate[],
+  avgPassRate: number,
+  avgSessionDurationMs: number
+): RegressionStatus {
+  const completed = sessions.filter((s) => s.export);
+  const sessionCount = completed.length;
+  const sufficientData = sessionCount >= REGRESSION_BASELINES.minSessions;
+
+  const checks: RegressionStatus["checks"] = [
+    {
+      name: "Average pass rate",
+      value: avgPassRate,
+      threshold: REGRESSION_BASELINES.minAvgPassRate,
+      passed: avgPassRate >= REGRESSION_BASELINES.minAvgPassRate,
+      unit: "%",
+    },
+    {
+      name: "Average session duration",
+      value: avgSessionDurationMs,
+      threshold: REGRESSION_BASELINES.maxAvgDurationMs,
+      passed: avgSessionDurationMs <= REGRESSION_BASELINES.maxAvgDurationMs,
+      unit: "ms",
+    },
+    ...promptAggregates
+      .filter((p) => p.passRate > 0 || p.totalAttempts > 0)
+      .map((p) => {
+        const threshold =
+          REGRESSION_BASELINES.perPrompt[p.prompt] ??
+          REGRESSION_BASELINES.minAvgPassRate;
+        return {
+          name: `${p.prompt.replace(/_/g, " ")} pass rate`,
+          value: p.passRate,
+          threshold,
+          passed: p.passRate >= threshold,
+          unit: "%",
+        };
+      }),
+  ];
+
+  const meetsBaseline = sufficientData && checks.every((c) => c.passed);
+
+  return {
+    meetsBaseline,
+    checkedAt: new Date().toISOString(),
+    sessionCount,
+    sufficientData,
+    checks,
+  };
+}
+
 export function buildDashboardSummary(sessions: ServerSession[]): DashboardSummary {
   const sessionItems = sessions
     .map(toSessionListItem)
@@ -355,6 +409,12 @@ export function buildDashboardSummary(sessions: ServerSession[]): DashboardSumma
 
   const promptAggregates = buildPromptAggregates(sessions);
   const alerts = buildAlerts(sessions);
+  const regression = buildRegressionStatus(
+    sessions,
+    promptAggregates,
+    avgPassRate,
+    avgSessionDurationMs
+  );
 
   return {
     totalSessions: sessions.length,
@@ -367,6 +427,7 @@ export function buildDashboardSummary(sessions: ServerSession[]): DashboardSumma
     promptAggregates,
     profileInsights: buildProfileInsights(sessions, promptAggregates),
     sessions: sessionItems,
+    regression,
   };
 }
 

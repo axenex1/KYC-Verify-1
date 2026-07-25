@@ -44,6 +44,22 @@ export interface ProfileInsight {
   detail?: string;
 }
 
+export interface RegressionCheck {
+  name: string;
+  value: number;
+  threshold: number;
+  passed: boolean;
+  unit?: string;
+}
+
+export interface RegressionStatus {
+  meetsBaseline: boolean;
+  checkedAt: string;
+  sessionCount: number;
+  sufficientData: boolean;
+  checks: RegressionCheck[];
+}
+
 export interface DashboardSummary {
   totalSessions: number;
   completedSessions: number;
@@ -55,6 +71,7 @@ export interface DashboardSummary {
   promptAggregates: PromptAggregate[];
   profileInsights: ProfileInsight[];
   sessions: SessionListItem[];
+  regression: RegressionStatus;
 }
 
 export interface TimelineEvent {

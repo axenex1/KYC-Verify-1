@@ -12,6 +12,8 @@ import { initFaceLandmarker, createFaceAnalyzer } from "@/lib/face/face-landmark
 import { initImageSegmenter, compositeFrame } from "@/lib/background/segmentation";
 import type { BackgroundMode } from "@/lib/constants";
 import type { MotionSignals } from "@/lib/session/types";
+import type { DistortionSettings } from "@/lib/distortion/types";
+import { applyDistortionToCanvas } from "@/lib/distortion/pipeline";
 
 export type CameraSource = "local" | "remote";
 
@@ -20,6 +22,7 @@ interface CameraCaptureProps {
   remoteStream?: MediaStream | null;
   backgroundMode: BackgroundMode;
   presetImage: HTMLImageElement | null;
+  distortionSettings?: DistortionSettings;
   stepKey?: string;
   facingMode: CameraFacing;
   onFacingModeChange?: (mode: CameraFacing) => void;
@@ -36,6 +39,7 @@ export function CameraCapture({
   remoteStream = null,
   backgroundMode,
   presetImage,
+  distortionSettings,
   stepKey,
   facingMode,
   onFacingModeChange,
@@ -138,29 +142,23 @@ export function CameraCapture({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // target processing fps for heavy work (composite + analyze)
     const TARGET_FPS = 15;
     const MIN_FRAME_MS = 1000 / TARGET_FPS;
-
-    const MOTION_UPDATE_MS = 250; // limit onMotionUpdate calls to every 250ms
+    const MOTION_UPDATE_MS = 250;
 
     const loop = () => {
       const now = performance.now();
       const timestampMs = now - startTimeRef.current;
 
-      // Always draw a lightweight preview frame for responsiveness.
-      // Heavy processing (segmentation + analysis) is throttled to TARGET_FPS.
       try {
         const width = video.videoWidth;
         const height = video.videoHeight;
         if (width && height) {
-          // update canvas size only when different to avoid layout thrash
           if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
           }
 
-          // If we are not ready to run heavy processing this frame, draw a simple video frame
           const shouldProcess = now - lastProcessedRef.current >= MIN_FRAME_MS;
 
           if (shouldProcess) {
@@ -169,7 +167,6 @@ export function CameraCapture({
             if (backgroundMode === "none") {
               ctx.drawImage(video, 0, 0, width, height);
             } else {
-              // compositeFrame is heavy (segmentation). It's now run at a capped rate.
               compositeFrame(ctx, video, segmenter, timestampMs, {
                 mode: backgroundMode,
                 presetImage,
@@ -178,10 +175,14 @@ export function CameraCapture({
               });
             }
 
-            // Run analyzer (face detection / motion) at the same throttled rate
+            // Apply spatial distortion to the composited frame (visual only —
+            // motion analysis still runs on the raw video element).
+            if (distortionSettings && distortionSettings.mode !== "none") {
+              applyDistortionToCanvas(ctx, width, height, distortionSettings);
+            }
+
             const frame = analyzerRef.current.analyze(landmarker, video, timestampMs);
 
-            // Only update React state when values actually change to avoid re-render storms
             if (prevFaceDetectedRef.current !== frame.signals.faceDetected) {
               prevFaceDetectedRef.current = frame.signals.faceDetected;
               setFaceDetected(frame.signals.faceDetected);
@@ -193,25 +194,19 @@ export function CameraCapture({
               setLowFps(lowFpsSignal);
             }
 
-            // Throttle onMotionUpdate to a lower frequency to reduce work for consumers
             if (now - lastMotionUpdateRef.current >= MOTION_UPDATE_MS) {
               lastMotionUpdateRef.current = now;
-              // Provide motion signals to parent at a throttled rate
               onMotionUpdate(frame.signals);
             }
 
-            // Call onFrame at throttled rate as well
             onFrame?.(canvas);
           } else {
-            // lightweight draw when skipping heavy processing keeps UI responsive
             if (backgroundMode === "none") {
               ctx.drawImage(video, 0, 0, width, height);
             }
           }
         }
       } catch (err) {
-        // Guard against unexpected errors in the loop so we don't break the RAF chain
-        // Keep errors non-fatal and surface them via onError if available
         console.error("Camera loop error:", err);
       }
 
@@ -231,6 +226,7 @@ export function CameraCapture({
     streamReady,
     backgroundMode,
     presetImage,
+    distortionSettings,
     onMotionUpdate,
     onFrame,
   ]);

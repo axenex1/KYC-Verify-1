@@ -30,6 +30,8 @@ export interface PersistedSessionState {
   status: SessionStatus;
   backgroundMode: string;
   presetId?: string;
+  providerId?: string;
+  customPromptSetId?: string;
 }
 
 export interface MotionSignals {
