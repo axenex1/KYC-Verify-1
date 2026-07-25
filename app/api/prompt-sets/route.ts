@@ -8,7 +8,7 @@ import { CreateCustomPromptSetSchema } from "@/lib/prompt-sets/types";
 
 export async function GET() {
   const sets = listCustomPromptSets();
-  return NextResponse.json({ promptSets: sets });
+  return NextResponse.json(sets);
 }
 
 export async function POST(request: Request) {
