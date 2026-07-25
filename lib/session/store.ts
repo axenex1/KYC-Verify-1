@@ -11,6 +11,8 @@ interface SessionStore {
   metrics: SessionMetrics;
   motionSignals: MotionSignals | null;
   error: string | null;
+  providerId: string | null;
+  customPromptSetId: string | null;
   setSessionId: (id: string) => void;
   setStatus: (status: SessionStatus) => void;
   setCurrentStepIndex: (index: number) => void;
@@ -18,6 +20,8 @@ interface SessionStore {
   setMotionSignals: (signals: MotionSignals | null) => void;
   updateMetrics: (metrics: Partial<SessionMetrics>) => void;
   setError: (error: string | null) => void;
+  setProviderId: (id: string | null) => void;
+  setCustomPromptSetId: (id: string | null) => void;
   reset: () => void;
   persist: () => void;
   hydrate: (sessionId: string) => void;
@@ -31,6 +35,8 @@ const initialState = {
   metrics: {} as SessionMetrics,
   motionSignals: null as MotionSignals | null,
   error: null as string | null,
+  providerId: null as string | null,
+  customPromptSetId: null as string | null,
 };
 
 export const useSessionStore = create<SessionStore>((set, get) => ({
@@ -66,6 +72,16 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
   setError: (error) => set({ error }),
 
+  setProviderId: (providerId) => {
+    set({ providerId });
+    get().persist();
+  },
+
+  setCustomPromptSetId: (customPromptSetId) => {
+    set({ customPromptSetId });
+    get().persist();
+  },
+
   reset: () => set({ ...initialState }),
 
   persist: () => {
@@ -78,6 +94,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       currentStepIndex: state.currentStepIndex,
       promptResults: state.promptResults,
       status: state.status,
+      providerId: state.providerId,
+      customPromptSetId: state.customPromptSetId,
     };
 
     sessionStorage.setItem(
@@ -96,12 +114,16 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         currentStepIndex: number;
         promptResults: PromptResult[];
         status: SessionStatus;
+        providerId?: string;
+        customPromptSetId?: string;
       };
       set({
         sessionId,
         currentStepIndex: data.currentStepIndex,
         promptResults: data.promptResults,
         status: data.status,
+        providerId: data.providerId ?? null,
+        customPromptSetId: data.customPromptSetId ?? null,
       });
     } catch {
       // Ignore corrupt session storage

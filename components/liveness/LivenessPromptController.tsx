@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraCapture, type CameraSource } from "@/components/camera/CameraCapture";
 import type { CameraFacing } from "@/lib/constants";
 import { BackgroundPicker } from "@/components/background/BackgroundPicker";
+import { DistortionPicker } from "@/components/camera/DistortionPicker";
 import { DocumentQAPanel, type DocumentQAState } from "@/components/documents/DocumentQAPanel";
 import { VerifyTabs, type VerifyTab } from "@/components/verify/VerifyTabs";
 import { PromptCard } from "./PromptCard";
@@ -13,16 +14,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSessionStore } from "@/lib/session/store";
 import {
-  evaluatePrompt,
   LIVENESS_PROMPTS,
   STANDARD_PROMPT_SET,
 } from "@/lib/session/prompts";
 import { ClientAuditLogger } from "@/lib/audit/logger";
 import type { BackgroundMode } from "@/lib/constants";
 import { BACKGROUND_PRESETS } from "@/lib/constants";
-import type { MotionSignals } from "@/lib/session/types";
+import type { MotionSignals, LivenessPrompt } from "@/lib/session/types";
 import type { PromptResult, SessionExport } from "@/types/session";
 import { Download, CheckCircle2, XCircle, Smartphone } from "lucide-react";
+import type { ProviderEvaluateFn } from "@/lib/session/providers";
+import { evaluatePrompt } from "@/lib/session/prompts";
+import type { LivenessPromptId } from "@/lib/session/types";
+import type { DistortionSettings } from "@/lib/distortion/types";
 
 import type { DocumentTransform } from "@/lib/documents/transforms";
 
@@ -35,6 +39,11 @@ interface PairedDeviceInfo {
 
 interface LivenessPromptControllerProps {
   sessionId: string;
+  prompts?: LivenessPrompt[];
+  evaluator?: ProviderEvaluateFn;
+  promptSetLabel?: string;
+  providerId?: string;
+  customPromptSetId?: string;
   cameraSource?: CameraSource;
   remoteStream?: MediaStream | null;
   companionFacingMode?: CameraFacing;
@@ -48,8 +57,16 @@ interface LivenessPromptControllerProps {
   onDocumentStateChange?: (state: DocumentQAState) => void;
 }
 
+const DEFAULT_EVALUATOR: ProviderEvaluateFn = (promptId, signals) =>
+  evaluatePrompt(promptId as LivenessPromptId, signals);
+
 export function LivenessPromptController({
   sessionId,
+  prompts = LIVENESS_PROMPTS,
+  evaluator = DEFAULT_EVALUATOR,
+  promptSetLabel = STANDARD_PROMPT_SET,
+  providerId,
+  customPromptSetId,
   cameraSource = "local",
   remoteStream = null,
   companionFacingMode,
@@ -84,10 +101,15 @@ export function LivenessPromptController({
   const lastBlinkCountRef = useRef(0);
   const lastBlinkTimeRef = useRef<number | null>(null);
   const stepCompletingRef = useRef(false);
+  const distortionSettingsRef = useRef<DistortionSettings>({ mode: "none", intensity: 0.5 });
 
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("none");
   const [presetId, setPresetId] = useState<string>(BACKGROUND_PRESETS[0].id);
   const [presetImage, setPresetImage] = useState<HTMLImageElement | null>(null);
+  const [distortionSettings, setDistortionSettings] = useState<DistortionSettings>({
+    mode: "none",
+    intensity: 0.5,
+  });
   const [cameraReady, setCameraReady] = useState(false);
   const [facingMode, setFacingMode] = useState<CameraFacing>("user");
   const activeFacingMode = companionFacingMode ?? facingMode;
@@ -99,7 +121,7 @@ export function LivenessPromptController({
   const [error, setError] = useState<string | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
-  const currentPrompt = LIVENESS_PROMPTS[currentStepIndex];
+  const currentPrompt = prompts[currentStepIndex];
   const isCompleted = status === "completed";
 
   useEffect(() => {
@@ -121,7 +143,7 @@ export function LivenessPromptController({
     setFacingMode(mode);
     setCameraReady(false);
     auditLogger.log("camera_switched", { facingMode: mode });
-  }, []);
+  }, [auditLogger]);
 
   const loadPresetImage = useCallback((id: string) => {
     const preset = BACKGROUND_PRESETS.find((p) => p.id === id);
@@ -152,6 +174,18 @@ export function LivenessPromptController({
       }
     },
     [backgroundMode, loadPresetImage]
+  );
+
+  const handleDistortionChange = useCallback(
+    (settings: DistortionSettings) => {
+      setDistortionSettings(settings);
+      distortionSettingsRef.current = settings;
+      auditLogger.log("distortion_changed", {
+        mode: settings.mode,
+        intensity: settings.intensity,
+      });
+    },
+    [auditLogger]
   );
 
   const completeStep = useCallback(
@@ -187,7 +221,7 @@ export function LivenessPromptController({
       }
 
       const nextIndex = currentStepIndex + 1;
-      if (nextIndex >= LIVENESS_PROMPTS.length) {
+      if (nextIndex >= prompts.length) {
         const avgFps =
           fpsSamplesRef.current.length > 0
             ? fpsSamplesRef.current.reduce((a, b) => a + b, 0) /
@@ -207,10 +241,16 @@ export function LivenessPromptController({
         updateMetrics(metrics);
         setStatus("completed");
 
+        const activeDistortionMode = distortionSettingsRef.current.mode;
+
         const exportPayload: SessionExport = {
           sessionId,
           environment: "qa",
-          promptSet: STANDARD_PROMPT_SET,
+          promptSet: promptSetLabel,
+          providerId: providerId,
+          customPromptSetId: customPromptSetId,
+          distortionMode:
+            activeDistortionMode !== "none" ? activeDistortionMode : undefined,
           createdAt: new Date().toISOString(),
           completedAt: new Date().toISOString(),
           promptResults: [...promptResults, result],
@@ -244,7 +284,7 @@ export function LivenessPromptController({
         stepStartRef.current = Date.now();
         stepCompletingRef.current = false;
         auditLogger.log("prompt_shown", {
-          prompt: LIVENESS_PROMPTS[nextIndex].id,
+          prompt: prompts[nextIndex].id,
         });
       }
     },
@@ -254,6 +294,10 @@ export function LivenessPromptController({
       currentAttempt,
       addPromptResult,
       promptResults,
+      prompts,
+      promptSetLabel,
+      providerId,
+      customPromptSetId,
       sessionId,
       setCurrentStepIndex,
       setStatus,
@@ -262,6 +306,7 @@ export function LivenessPromptController({
       documentQAState,
       pairedDevice,
       companionFacingMode,
+      auditLogger,
     ]
   );
 
@@ -295,7 +340,7 @@ export function LivenessPromptController({
 
       const elapsed = Date.now() - stepStartRef.current;
       if (elapsed > currentPrompt.timeoutMs) {
-        const evaluation = evaluatePrompt(currentPrompt.id, {
+        const evaluation = evaluator(currentPrompt.id, {
           faceDetected: signals.faceDetected,
           blinkCount: signals.blinkCount,
           yawDeg: signals.yawDeg,
@@ -308,7 +353,7 @@ export function LivenessPromptController({
         return;
       }
 
-      const evaluation = evaluatePrompt(currentPrompt.id, {
+      const evaluation = evaluator(currentPrompt.id, {
         faceDetected: signals.faceDetected,
         blinkCount: signals.blinkCount,
         yawDeg: signals.yawDeg,
@@ -328,6 +373,8 @@ export function LivenessPromptController({
       currentPrompt,
       isCompleted,
       setMotionSignals,
+      evaluator,
+      auditLogger,
     ]
   );
 
@@ -338,7 +385,7 @@ export function LivenessPromptController({
     stepStartRef.current = Date.now();
     lastBlinkCountRef.current = 0;
     lastBlinkTimeRef.current = null;
-  }, [currentPrompt, isCompleted, currentStepIndex]);
+  }, [currentPrompt, isCompleted, currentStepIndex, auditLogger]);
 
   const handleDownload = () => {
     if (!exportData) return;
@@ -420,6 +467,7 @@ export function LivenessPromptController({
               remoteStream={remoteStream}
               backgroundMode={backgroundMode}
               presetImage={presetImage}
+              distortionSettings={distortionSettings}
               stepKey={currentPrompt?.id}
               facingMode={activeFacingMode}
               onFacingModeChange={
@@ -444,10 +492,17 @@ export function LivenessPromptController({
               onModeChange={handleModeChange}
               onPresetChange={handlePresetChange}
             />
+            <DistortionPicker
+              settings={distortionSettings}
+              onChange={handleDistortionChange}
+            />
           </div>
 
           <div className="space-y-4">
-            <LivenessProgress currentStepIndex={currentStepIndex} />
+            <LivenessProgress
+              currentStepIndex={currentStepIndex}
+              prompts={prompts}
+            />
             {currentPrompt && (
               <PromptCard
                 prompt={currentPrompt}
