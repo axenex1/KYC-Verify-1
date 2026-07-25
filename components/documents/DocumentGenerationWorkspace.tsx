@@ -42,8 +42,8 @@ export function DocumentGenerationWorkspace({
 
   const modeDescription = useMemo(() => {
     return mode === "selfie_to_au_license"
-      ? "Upload a selfie to generate a synthetic Australian driver licence card image."
-      : "Upload an Australian licence image to generate a portrait avatar.";
+      ? "Upload a selfie to generate a synthetic Australian driver license card image."
+      : "Upload an Australian license image to generate a portrait avatar.";
   }, [mode]);
 
   const handleFileChange = async (file: File | null) => {

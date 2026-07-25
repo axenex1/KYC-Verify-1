@@ -26,8 +26,8 @@ npm run dist:win     # Windows NSIS package
 
 The document tab now includes an **AU Generation Workspace** with:
 
-- Selfie → synthetic Australian driver licence card image
-- Australian licence image → avatar portrait
+- Selfie → synthetic Australian driver license card image
+- Australian license image → avatar portrait
 
 Configure server-side Runway access:
 
