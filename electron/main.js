@@ -14,6 +14,11 @@ const { fork } = require("node:child_process");
 
 let serverProcess = null;
 let mainWindow = null;
+let splashWindow = null;
+
+function getAssetPath(...segments) {
+  return path.join(__dirname, "assets", ...segments);
+}
 
 function getStandaloneDir() {
   return app.isPackaged
@@ -88,8 +93,12 @@ function createWindow(port) {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 860,
+    minWidth: 1140,
+    minHeight: 760,
+    show: false,
     backgroundColor: "#0a0a0a",
     title: "KYC-Verify",
+    icon: getAssetPath("app-icon.png"),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -102,13 +111,45 @@ function createWindow(port) {
   });
 
   mainWindow.loadURL(`http://127.0.0.1:${port}/`);
+  mainWindow.once("ready-to-show", () => {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.close();
+      splashWindow = null;
+    }
+    mainWindow?.show();
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 520,
+    height: 320,
+    frame: false,
+    resizable: false,
+    movable: false,
+    alwaysOnTop: true,
+    transparent: true,
+    show: true,
+    backgroundColor: "#00000000",
+    icon: getAssetPath("app-icon.png"),
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  splashWindow.loadFile(path.join(__dirname, "splash.html"));
+  splashWindow.on("closed", () => {
+    splashWindow = null;
+  });
+}
+
 async function bootstrap() {
   try {
+    createSplashWindow();
     const port = await findFreePort();
     startServer(port);
     await waitForServer(port);
@@ -137,5 +178,9 @@ app.on("quit", () => {
   if (serverProcess) {
     serverProcess.kill();
     serverProcess = null;
+  }
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.destroy();
+    splashWindow = null;
   }
 });

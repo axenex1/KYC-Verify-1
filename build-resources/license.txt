@@ -1,0 +1,22 @@
+KYC-Verify Internal QA Desktop License Agreement
+
+This software is licensed for internal quality assurance, testing, demonstration, and integration rehearsal purposes only.
+
+1. Permitted Use
+- You may use this build to simulate liveness, document review, and related KYC test workflows.
+- You may install this software on approved internal machines for evaluation and QA operations.
+
+2. Restrictions
+- You must not use this software as a production identity verification system.
+- You must not rely on its outputs for live customer onboarding or regulated compliance decisions.
+- You must not redistribute this software outside your organization without authorization.
+
+3. Data Handling
+- Session artifacts, screenshots, exports, and logs must be handled according to your organization's privacy, security, and retention policies.
+- Sensitive or personal data should only be used when approved for testing.
+
+4. No Warranty
+This software is provided "as is" for internal use, without warranties of any kind, express or implied.
+
+5. Acceptance
+By installing or using this software, you acknowledge and accept the terms of this agreement.

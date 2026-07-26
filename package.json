@@ -20,7 +20,8 @@
     "appId": "dev.khaos.kycverify1",
     "productName": "KYC-Verify",
     "directories": {
-      "output": "dist-electron"
+      "output": "dist-electron",
+      "buildResources": "build-resources"
     },
     "files": [
       "electron/**/*"
@@ -40,6 +41,7 @@
       }
     ],
     "win": {
+      "icon": "build-resources/app-icon.ico",
       "target": [
         "nsis"
       ]
@@ -47,7 +49,14 @@
     "nsis": {
       "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build-resources/app-icon.ico",
+      "uninstallerIcon": "build-resources/app-icon.ico",
+      "installerHeaderIcon": "build-resources/app-icon.ico",
+      "installerSidebar": "build-resources/installer-sidebar.bmp",
+      "uninstallerSidebar": "build-resources/uninstaller-sidebar.bmp",
+      "installerHeader": "build-resources/installer-header.bmp",
+      "license": "build-resources/license.txt"
     }
   },
   "dependencies": {
