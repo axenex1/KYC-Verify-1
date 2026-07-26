@@ -22,7 +22,7 @@ const response = await fetch(url, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `******
+    Authorization: "Bearer " + apiKey,
   },
   body: JSON.stringify({
     model,
