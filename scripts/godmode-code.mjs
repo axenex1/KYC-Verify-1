@@ -18,25 +18,32 @@ if (!baseUrl || !apiKey || !model) {
 
 const url = `${baseUrl.replace(/\/+$/, "")}/v1/chat/completions`;
 
-const response = await fetch(url, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: "Bearer " + apiKey,
-  },
-  body: JSON.stringify({
-    model,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a senior software engineer. Return practical implementation guidance and code when requested.",
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.2,
-  }),
-});
+let response;
+try {
+  response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + apiKey,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a senior software engineer. Return practical implementation guidance and code when requested.",
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.2,
+    }),
+  });
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Network request failed: ${message}`);
+  process.exit(1);
+}
 
 if (!response.ok) {
   const body = await response.text();

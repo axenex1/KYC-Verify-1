@@ -23,7 +23,7 @@ npm run electron:dev # Requires prior build:standalone
 npm run dist:win     # Windows NSIS package
 ```
 
-## godmode (g0dm0d3.ai) coding API
+## godmode / g0dm0d3.ai coding API
 
 Use the OpenAI-compatible endpoint from this repo:
 
@@ -35,6 +35,7 @@ npm run ai:code -- "create a TypeScript utility for retry with backoff"
 ```
 
 The script calls `POST /v1/chat/completions` with your prompt and prints the model output to stdout.
+In this repo, `godmode` and `g0dm0d3.ai` refer to the same API service.
 
 ## Routes
 
