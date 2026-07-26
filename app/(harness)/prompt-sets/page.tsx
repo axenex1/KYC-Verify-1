@@ -64,8 +64,8 @@ export default function PromptSetsPage() {
     try {
       const res = await fetch("/api/prompt-sets");
       if (res.ok) {
-        const data = (await res.json()) as { promptSets: CustomPromptSet[] };
-        setSets(data.promptSets);
+        const data = (await res.json()) as CustomPromptSet[];
+        setSets(data);
       }
     } catch {
       toast.error("Failed to load prompt sets");
