@@ -38,7 +38,10 @@ Options:
 }
 
 const BASE_URL = args["base-url"];
-const SCENARIO_COUNT = Math.max(1, parseInt(args.scenarios, 10));
+const parsedScenarioCount = Number.parseInt(args.scenarios, 10);
+const SCENARIO_COUNT = Number.isNaN(parsedScenarioCount)
+  ? 5
+  : Math.max(1, parsedScenarioCount);
 const EXIT_ON_FAIL = args["exit-on-fail"];
 
 // ── Regression baselines (mirrored from lib/regression/baselines.ts) ─────────

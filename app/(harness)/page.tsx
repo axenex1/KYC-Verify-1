@@ -44,7 +44,9 @@ export default function HomePage() {
       .then((data) => {
         setCustomPromptSets(CustomPromptSetSchema.array().parse(data));
       })
-      .catch(() => {/* ignore — custom sets are optional */});
+      .catch((error) => {
+        console.error("Failed to load custom prompt sets", error);
+      });
   }, []);
 
   const createSession = async (mode: "local" | "companion") => {
