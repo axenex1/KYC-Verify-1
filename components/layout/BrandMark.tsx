@@ -29,7 +29,7 @@ export function BrandMark({ compact = false, className }: BrandMarkProps) {
       </div>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">
+          <span className="truncate text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">
             KYC-Verify
           </span>
           {!compact ? (

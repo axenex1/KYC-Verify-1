@@ -107,7 +107,7 @@ export function AppShell({ children, showQaBanner = true }: AppShellProps) {
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
             <Badge variant="secondary" className="gap-1 rounded-full border border-fuchsia-400/20 bg-fuchsia-400/10 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-fuchsia-100">
               <Workflow className="h-3.5 w-3.5" />
-              Live QA cockpit
+              Desktop workflow
             </Badge>
             {providerId ? (
               <Badge variant="secondary" className="gap-1 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-100">
