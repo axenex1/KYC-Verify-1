@@ -1,0 +1,58 @@
+name: Feature request
+description: Propose a feature update or code implementation for the QA liveness harness
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve for QA testing of KYC provider liveness integrations?
+      placeholder: Describe the gap or pain point this feature addresses.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: What should be built or changed?
+      placeholder: Describe the desired behavior or implementation direction.
+    validations:
+      required: true
+  - type: dropdown
+    id: affected-areas
+    attributes:
+      label: Affected areas
+      description: Which parts of the codebase does this touch?
+      multiple: true
+      options:
+        - Harness UI (app/, components/)
+        - Domain logic (lib/)
+        - API routes (app/api/)
+        - Sync server (scripts/sync-server.ts)
+        - Electron packaging (electron/)
+    validations:
+      required: true
+  - type: dropdown
+    id: priority-track
+    attributes:
+      label: Priority track
+      description: >-
+        Priority is decided by impact on the core mission: provider coverage and
+        test fidelity first, dashboard/analytics second, developer experience third.
+      options:
+        - Provider coverage
+        - Test fidelity (distortion, prompts, behavioral signals)
+        - Session replay & analytics
+        - Companion/sync robustness
+        - Distribution (Electron)
+        - Developer experience
+    validations:
+      required: true
+  - type: textarea
+    id: regression
+    attributes:
+      label: Regression scenario
+      description: >-
+        Every provider or liveness feature ships with a regression scenario in
+        lib/regression. Describe the scenario this feature will add or update.

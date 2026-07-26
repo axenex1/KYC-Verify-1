@@ -39,3 +39,7 @@ npm run dist:win     # Windows NSIS package
 3. **Ephemeral** — React state/refs for camera, WebRTC, dialogs
 
 Do not mix session QA payloads with preference keys.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the feature decision process, delivery workflow, and quality gates (CI runs lint, build, and smoke on every PR).
