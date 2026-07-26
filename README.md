@@ -23,7 +23,7 @@ npm run electron:dev # Requires prior build:standalone
 npm run dist:win     # Windows NSIS package
 ```
 
-## g0dm0d3.ai coding API
+## godmode (g0dm0d3.ai) coding API
 
 Use the OpenAI-compatible endpoint from this repo:
 
