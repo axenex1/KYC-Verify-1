@@ -16,7 +16,10 @@ import { Label } from "@/components/ui/label";
 import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
 import { listProviders } from "@/lib/session/providers";
 import { useSessionStore } from "@/lib/session/store";
-import type { CustomPromptSet } from "@/lib/prompt-sets/types";
+import {
+  CustomPromptSetSchema,
+  type CustomPromptSet,
+} from "@/lib/prompt-sets/types";
 
 const PROVIDERS = listProviders();
 
@@ -39,7 +42,7 @@ export default function HomePage() {
     fetch("/api/prompt-sets")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setCustomPromptSets(data as CustomPromptSet[]);
+        setCustomPromptSets(CustomPromptSetSchema.array().parse(data));
       })
       .catch(() => {/* ignore — custom sets are optional */});
   }, []);
