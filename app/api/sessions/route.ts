@@ -7,10 +7,13 @@ import {
 } from "@/lib/session/server-store";
 import { toSessionListItem } from "@/lib/dashboard/aggregations";
 import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
+import { getProvider, DEFAULT_PROVIDER_ID } from "@/lib/session/providers";
 
 const CreateSessionSchema = z.object({
   mode: z.literal("verification"),
   promptSet: z.string().default(STANDARD_PROMPT_SET),
+  providerId: z.string().optional(),
+  customPromptSetId: z.string().uuid().optional(),
 });
 
 export async function GET(request: Request) {
@@ -35,12 +38,23 @@ export async function POST(request: Request) {
     const sessionId = randomUUID();
     const createdAt = new Date().toISOString();
 
-    createServerSession(sessionId, parsed.promptSet);
+    const providerId = parsed.providerId ?? DEFAULT_PROVIDER_ID;
+    const provider = getProvider(providerId);
+    const promptSetLabel = parsed.customPromptSetId
+      ? `custom:${parsed.customPromptSetId}`
+      : provider.promptSetLabel;
+
+    createServerSession(sessionId, promptSetLabel, {
+      providerId,
+      customPromptSetId: parsed.customPromptSetId,
+    });
 
     return NextResponse.json({
       sessionId,
       createdAt,
       environment: "application" as const,
+      providerId,
+      customPromptSetId: parsed.customPromptSetId,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

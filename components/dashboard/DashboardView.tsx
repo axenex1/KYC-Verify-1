@@ -9,6 +9,7 @@ import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
+import { RegressionPanel } from "@/components/dashboard/RegressionPanel";
 import type { DashboardSummary } from "@/types/dashboard";
 
 export function DashboardView() {
@@ -96,6 +97,8 @@ export function DashboardView() {
         <ProgressTracker aggregates={summary.promptAggregates} />
         <ProfileSummary insights={summary.profileInsights} />
       </div>
+
+      <RegressionPanel regression={summary.regression} />
     </div>
   );
 }

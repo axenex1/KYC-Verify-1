@@ -43,6 +43,9 @@ export const SessionExportSchema = z.object({
   sessionId: z.string().uuid(),
   environment: z.literal("application"),
   promptSet: z.string(),
+  providerId: z.string().optional(),
+  customPromptSetId: z.string().uuid().optional(),
+  distortionMode: z.string().optional(),
   createdAt: z.string(),
   completedAt: z.string().optional(),
   promptResults: z.array(PromptResultSchema),
@@ -76,4 +79,6 @@ export interface CreateSessionResponse {
   sessionId: string;
   createdAt: string;
   environment: "application";
+  providerId?: string;
+  customPromptSetId?: string;
 }

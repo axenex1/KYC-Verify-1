@@ -4,6 +4,8 @@ export interface ServerSession {
   sessionId: string;
   environment: "application";
   promptSet: string;
+  providerId?: string;
+  customPromptSetId?: string;
   createdAt: string;
   completedAt?: string;
   export?: SessionExport;
@@ -13,12 +15,15 @@ const sessions = new Map<string, ServerSession>();
 
 export function createServerSession(
   sessionId: string,
-  promptSet: string
+  promptSet: string,
+  options?: { providerId?: string; customPromptSetId?: string }
 ): ServerSession {
   const session: ServerSession = {
     sessionId,
     environment: "application",
     promptSet,
+    providerId: options?.providerId,
+    customPromptSetId: options?.customPromptSetId,
     createdAt: new Date().toISOString(),
   };
   sessions.set(sessionId, session);

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EventTimeline } from "@/components/dashboard/EventTimeline";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
+import { ReplayPlayer } from "@/components/replay/ReplayPlayer";
 import { buildSessionTimeline } from "@/lib/dashboard/aggregations";
 import type { SessionExport } from "@/types/session";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -140,6 +141,16 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
             <p className="text-zinc-500">Platform</p>
             <p>{exportData.device?.platform ?? "Unknown"}</p>
           </div>
+          <div>
+            <p className="text-zinc-500">Provider / Prompt set</p>
+            <p className="font-semibold">{exportData.promptSet}</p>
+          </div>
+          {exportData.distortionMode && (
+            <div>
+              <p className="text-zinc-500">Distortion</p>
+              <p className="font-semibold capitalize">{exportData.distortionMode}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -178,6 +189,8 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
         <ProgressTracker aggregates={promptAggregates} />
         <EventTimeline events={events} />
       </div>
+
+      <ReplayPlayer events={exportData.events} createdAt={exportData.createdAt} />
 
       {(exportData.pairedDevice || exportData.documentQA) && (
         <Card>

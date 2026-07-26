@@ -1,15 +1,20 @@
 "use client";
 
+import type { LivenessPrompt } from "@/lib/session/types";
 import { LIVENESS_PROMPTS } from "@/lib/session/prompts";
 import { Progress } from "@/components/ui/progress";
 
 interface LivenessProgressProps {
   currentStepIndex: number;
+  prompts?: LivenessPrompt[];
 }
 
-export function LivenessProgress({ currentStepIndex }: LivenessProgressProps) {
-  const total = LIVENESS_PROMPTS.length;
-  const progress = total > 0 ? ((currentStepIndex) / total) * 100 : 0;
+export function LivenessProgress({
+  currentStepIndex,
+  prompts = LIVENESS_PROMPTS,
+}: LivenessProgressProps) {
+  const total = prompts.length;
+  const progress = total > 0 ? (currentStepIndex / total) * 100 : 0;
 
   return (
     <div className="space-y-2">

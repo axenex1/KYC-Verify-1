@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Camera,
   LayoutDashboard,
+  ListChecks,
   Smartphone,
   FlaskConical,
 } from "lucide-react";
@@ -21,6 +22,12 @@ const navItems = [
     label: "Dashboard",
     icon: LayoutDashboard,
     match: (p: string) => p.startsWith("/dashboard"),
+  },
+  {
+    href: "/prompt-sets",
+    label: "Prompt Sets",
+    icon: ListChecks,
+    match: (p: string) => p.startsWith("/prompt-sets"),
   },
 ] as const;
 
