@@ -5,6 +5,10 @@ import { CameraCapture, type CameraSource } from "@/components/camera/CameraCapt
 import type { CameraFacing } from "@/lib/constants";
 import { BackgroundPicker } from "@/components/background/BackgroundPicker";
 import { DocumentQAPanel, type DocumentQAState } from "@/components/documents/DocumentQAPanel";
+import {
+  DocumentGenerationPanel,
+  type DocumentGenerationState,
+} from "@/components/documents/DocumentGenerationPanel";
 import { VerifyTabs, type VerifyTab } from "@/components/verify/VerifyTabs";
 import { PromptCard } from "./PromptCard";
 import { LivenessProgress } from "./LivenessProgress";
@@ -46,6 +50,10 @@ interface LivenessPromptControllerProps {
   onDocumentTransformApplied?: (transform: DocumentTransform) => void;
   onDocumentTransformRejected?: () => void;
   onDocumentStateChange?: (state: DocumentQAState) => void;
+  /** Fired once when the liveness run completes and export payload is ready. */
+  onComplete?: (exportData: SessionExport) => void;
+  /** Hide the built-in completion card (parent handles post-run UI). */
+  hideCompletionCard?: boolean;
 }
 
 export function LivenessPromptController({
@@ -61,6 +69,8 @@ export function LivenessPromptController({
   onDocumentTransformApplied,
   onDocumentTransformRejected,
   onDocumentStateChange,
+  onComplete,
+  hideCompletionCard = false,
 }: LivenessPromptControllerProps) {
   const {
     currentStepIndex,
@@ -95,9 +105,12 @@ export function LivenessPromptController({
   const [documentQAState, setDocumentQAState] = useState<DocumentQAState | null>(
     null
   );
+  const [documentGenerationState, setDocumentGenerationState] =
+    useState<DocumentGenerationState | null>(null);
   const [exportData, setExportData] = useState<SessionExport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [promptElapsed, setPromptElapsed] = useState(0);
 
   const currentPrompt = LIVENESS_PROMPTS[currentStepIndex];
   const isCompleted = status === "completed";
@@ -227,11 +240,21 @@ export function LivenessPromptController({
                 appliedTransform: documentQAState.appliedTransform,
               }
             : undefined,
+          documentGeneration: documentGenerationState
+            ? {
+                avatarId: documentGenerationState.avatarId ?? undefined,
+                avatarName: documentGenerationState.avatarName ?? undefined,
+                status: documentGenerationState.status ?? undefined,
+                sourceFileName:
+                  documentGenerationState.sourceFileName ?? undefined,
+              }
+            : undefined,
           pairedDevice,
         };
 
         auditLogger.log("session_completed", { sessionId });
         setExportData(exportPayload);
+        onComplete?.(exportPayload);
 
         await fetch(`/api/sessions/${sessionId}/export`, {
           method: "POST",
@@ -260,8 +283,11 @@ export function LivenessPromptController({
       updateMetrics,
       facingMode,
       documentQAState,
+      documentGenerationState,
       pairedDevice,
       companionFacingMode,
+      onComplete,
+      auditLogger,
     ]
   );
 
@@ -294,6 +320,7 @@ export function LivenessPromptController({
       if (!currentPrompt || !cameraReady || isCompleted) return;
 
       const elapsed = Date.now() - stepStartRef.current;
+      setPromptElapsed(elapsed);
       if (elapsed > currentPrompt.timeoutMs) {
         const evaluation = evaluatePrompt(currentPrompt.id, {
           faceDetected: signals.faceDetected,
@@ -353,32 +380,97 @@ export function LivenessPromptController({
     URL.revokeObjectURL(url);
   };
 
-  if (isCompleted && exportData) {
+  if (isCompleted && exportData && !hideCompletionCard) {
+    const passedCount = exportData.promptResults.filter((r) => r.passed).length;
+    const passRate = passedCount / exportData.promptResults.length;
+
     return (
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Session Complete</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Simulated liveness signals captured for QA integration testing.
-              Results are not valid for production KYC verification.
+        {/* Completion hero */}
+        <Card className="overflow-hidden border-zinc-200/60 dark:border-zinc-800/60">
+          <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 sm:p-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                  <CardTitle className="text-xl">Session Complete</CardTitle>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Simulated liveness signals captured for QA integration testing.
+                  Results are not valid for production KYC verification.
+                </p>
+              </div>
+              <Button
+                onClick={handleDownload}
+                size="lg"
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download Audit JSON
+              </Button>
+            </div>
+          </div>
+          <CardContent className="p-6">
+            {/* Summary stats */}
+            <div className="mb-6 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-lg border border-zinc-200/60 bg-zinc-50/50 p-4 dark:border-zinc-800/60 dark:bg-zinc-900/50">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Pass Rate
+                </p>
+                <p className="mt-1 text-2xl font-bold tabular-nums">
+                  {Math.round(passRate * 100)}%
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {passedCount}/{exportData.promptResults.length} prompts
+                </p>
+              </div>
+              <div className="rounded-lg border border-zinc-200/60 bg-zinc-50/50 p-4 dark:border-zinc-800/60 dark:bg-zinc-900/50">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Head Rotation
+                </p>
+                <p className="mt-1 text-2xl font-bold tabular-nums">
+                  {exportData.metrics.headRotationMaxDeg?.toFixed(1) ?? "-"}°
+                </p>
+                <p className="text-xs text-muted-foreground">max detected</p>
+              </div>
+              <div className="rounded-lg border border-zinc-200/60 bg-zinc-50/50 p-4 dark:border-zinc-800/60 dark:bg-zinc-900/50">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Avg FPS
+                </p>
+                <p className="mt-1 text-2xl font-bold tabular-nums">
+                  {exportData.metrics.avgFps?.toFixed(1) ?? "-"}
+                </p>
+                <p className="text-xs text-muted-foreground">frames/second</p>
+              </div>
+            </div>
+
+            {/* Prompt results */}
+            <p className="mb-3 text-sm font-semibold tracking-tight">
+              Prompt Results
             </p>
             <div className="space-y-2">
-              {exportData.promptResults.map((result) => (
+              {exportData.promptResults.map((result, i) => (
                 <div
                   key={result.prompt}
-                  className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200/60 px-4 py-3 transition-colors hover:bg-zinc-50/50 dark:border-zinc-800/60 dark:hover:bg-zinc-900/50"
                 >
-                  <span className="text-sm font-medium">{result.prompt}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={result.passed ? "success" : "destructive"}>
-                      {result.passed ? "Pass" : "Fail"}
-                    </Badge>
-                    <span className="text-xs text-zinc-500">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {i + 1}
+                    </span>
+                    <span className="text-sm font-medium capitalize">
+                      {result.prompt.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs tabular-nums text-muted-foreground">
                       {Math.round(result.confidence * 100)}%
                     </span>
+                    <Badge
+                      variant={result.passed ? "success" : "destructive"}
+                    >
+                      {result.passed ? "Pass" : "Fail"}
+                    </Badge>
                     {result.passed ? (
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     ) : (
@@ -388,12 +480,23 @@ export function LivenessPromptController({
                 </div>
               ))}
             </div>
-            <Button onClick={handleDownload} className="w-full sm:w-auto">
-              <Download className="h-4 w-4" />
-              Download Audit JSON
-            </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (isCompleted && exportData && hideCompletionCard) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 border border-line bg-surface px-4 py-10 text-center">
+        <CheckCircle2 className="h-6 w-6 text-neon-green" />
+        <p className="font-mono text-sm uppercase tracking-wider text-neon-green">
+          Probe capture complete
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Session <code className="font-mono">{sessionId}</code> - parent console
+          owns verdict / findings.
+        </p>
       </div>
     );
   }
@@ -406,7 +509,7 @@ export function LivenessPromptController({
         <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-100">
           <Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            Mobile QA mode — test on your phone browser. Use rear camera toggle
+            Mobile QA mode - test on your phone browser. Use rear camera toggle
             for document-style capture flows.
           </p>
         </div>
@@ -453,6 +556,7 @@ export function LivenessPromptController({
                 prompt={currentPrompt}
                 attempt={currentAttempt}
                 status="active"
+                elapsedMs={promptElapsed}
               />
             )}
             {error && (
@@ -462,7 +566,7 @@ export function LivenessPromptController({
             )}
           </div>
         </div>
-      ) : (
+      ) : activeTab === "document" ? (
         <DocumentQAPanel
           auditLogger={auditLogger}
           onStateChange={(state) => {
@@ -472,6 +576,11 @@ export function LivenessPromptController({
           onTransformProposed={onDocumentTransformProposed}
           onTransformApplied={onDocumentTransformApplied}
           onTransformRejected={onDocumentTransformRejected}
+        />
+      ) : (
+        <DocumentGenerationPanel
+          auditLogger={auditLogger}
+          onStateChange={setDocumentGenerationState}
         />
       )}
     </div>

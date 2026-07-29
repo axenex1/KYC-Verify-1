@@ -3,6 +3,7 @@
 import type { BackgroundMode } from "@/lib/constants";
 import { BACKGROUND_PRESETS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { Monitor, Droplets, Square, Image } from "lucide-react";
 
 interface BackgroundPickerProps {
   mode: BackgroundMode;
@@ -12,11 +13,15 @@ interface BackgroundPickerProps {
   lowLightWarning?: boolean;
 }
 
-const MODES: { id: BackgroundMode; label: string }[] = [
-  { id: "none", label: "Raw" },
-  { id: "blur", label: "Blur" },
-  { id: "solid", label: "Solid" },
-  { id: "preset", label: "Preset" },
+const MODES: {
+  id: BackgroundMode;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { id: "none", label: "Raw", icon: Monitor },
+  { id: "blur", label: "Blur", icon: Droplets },
+  { id: "solid", label: "Solid", icon: Square },
+  { id: "preset", label: "Preset", icon: Image },
 ];
 
 export function BackgroundPicker({
@@ -29,31 +34,35 @@ export function BackgroundPicker({
   return (
     <div className="space-y-3">
       <div>
-        <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Background mode
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Background
         </p>
         <div className="flex flex-wrap gap-2">
-          {MODES.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onModeChange(item.id)}
-              className={cn(
-                "rounded-lg border px-3 py-1.5 text-sm transition-colors",
-                mode === item.id
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
+          {MODES.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onModeChange(item.id)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
+                  mode === item.id
+                    ? "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/20"
+                    : "border-zinc-200 bg-card text-muted-foreground hover:bg-accent hover:text-foreground dark:border-zinc-800"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {mode === "preset" && (
-        <div>
-          <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="rounded-lg border border-zinc-200/60 bg-zinc-50/50 p-3 dark:border-zinc-800/60 dark:bg-zinc-900/50">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Preset scene
           </p>
           <div className="flex flex-wrap gap-2">
@@ -63,10 +72,10 @@ export function BackgroundPicker({
                 type="button"
                 onClick={() => onPresetChange(preset.id)}
                 className={cn(
-                  "rounded-lg border px-3 py-1.5 text-sm transition-colors",
+                  "rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
                   presetId === preset.id
-                    ? "border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-100"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-300"
+                    : "border-zinc-200 bg-card text-muted-foreground hover:bg-accent hover:text-foreground dark:border-zinc-800"
                 )}
               >
                 {preset.label}
@@ -77,10 +86,11 @@ export function BackgroundPicker({
       )}
 
       {lowLightWarning && (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          Background lighting appears low. Consider increasing ambient light for
-          clearer QA captures.
-        </p>
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200/60 bg-amber-50/50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-100">
+          <div className="mt-0.5 h-3 w-3 shrink-0 rounded-full bg-amber-400" />
+          Low ambient light detected - consider enabling blur or solid
+          background.
+        </div>
       )}
     </div>
   );

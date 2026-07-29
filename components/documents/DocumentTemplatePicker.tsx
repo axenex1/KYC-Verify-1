@@ -18,7 +18,7 @@ export function DocumentTemplatePicker({
     <div className={cn("space-y-2", className)}>
       <p className="text-sm font-medium">Mock document template</p>
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-        Synthetic layouts only — clearly labeled as test documents.
+        Synthetic layouts only - clearly labeled as test documents.
       </p>
       <div className="grid gap-2 sm:grid-cols-3">
         {DOCUMENT_TEMPLATES.map((template) => (
