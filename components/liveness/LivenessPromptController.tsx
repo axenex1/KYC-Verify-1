@@ -247,6 +247,12 @@ export function LivenessPromptController({
                 status: documentGenerationState.status ?? undefined,
                 sourceFileName:
                   documentGenerationState.sourceFileName ?? undefined,
+                faceCropped: documentGenerationState.faceCropped,
+                motionVideoUrl:
+                  documentGenerationState.motionVideoUrl ?? undefined,
+                armedClipUrl:
+                  documentGenerationState.armedClip?.clipUrl ?? undefined,
+                armedAt: documentGenerationState.armedClip?.armedAt ?? undefined,
               }
             : undefined,
           pairedDevice,
