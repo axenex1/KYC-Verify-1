@@ -1,10 +1,5 @@
 import type { VectorPayload, VectorPayloadKind } from "@/types/engagement";
 import type { AttackVector, AttackVectorFactory } from "./types";
-import { getArmedAvatarClip } from "@/lib/harness/armed-clip-store";
-import {
-  createLoopingClipStream,
-  type LoopingClipHandle,
-} from "@/lib/harness/export-video";
 
 function createStubVector(
   kind: VectorPayloadKind,
@@ -20,6 +15,7 @@ function createStubVector(
       return { kind, label, config: activeConfig };
     },
     async inject(stream: MediaStream | null): Promise<MediaStream | null> {
+      // Stub: later phases apply deepfake / document / behavioral / SDK transforms.
       return stream;
     },
     async teardown(): Promise<void> {
@@ -28,73 +24,8 @@ function createStubVector(
   };
 }
 
-function createDeepfakeVector(): AttackVector {
-  let activeConfig: Record<string, unknown> = {};
-  let clipUrl: string | null = null;
-  let handle: LoopingClipHandle | null = null;
-
-  return {
-    kind: "deepfake",
-    label: "Deepfake Injection",
-    async configure(config = {}): Promise<VectorPayload> {
-      activeConfig = { ...config };
-      const fromConfig =
-        typeof config.clipUrl === "string" && config.clipUrl.trim()
-          ? config.clipUrl.trim()
-          : null;
-
-      let armedClipUrl: string | null = null;
-      let armedMeta: Record<string, unknown> = {};
-      if (!fromConfig && typeof window !== "undefined") {
-        const armed = getArmedAvatarClip();
-        if (armed?.clipUrl) {
-          armedClipUrl = armed.clipUrl;
-          armedMeta = {
-            armedAt: armed.armedAt,
-            avatarId: armed.avatarId ?? undefined,
-          };
-        }
-      }
-
-      clipUrl = fromConfig ?? armedClipUrl;
-      if (clipUrl && !fromConfig) {
-        activeConfig = {
-          ...activeConfig,
-          clipUrl,
-          ...armedMeta,
-        };
-      }
-      return {
-        kind: "deepfake",
-        label: "Deepfake Injection",
-        config: activeConfig,
-      };
-    },
-    async inject(stream: MediaStream | null): Promise<MediaStream | null> {
-      if (!clipUrl) {
-        return stream;
-      }
-      if (typeof window === "undefined") {
-        return stream;
-      }
-      if (handle) {
-        handle.stop();
-        handle = null;
-      }
-      handle = await createLoopingClipStream(clipUrl);
-      return handle.stream;
-    },
-    async teardown(): Promise<void> {
-      handle?.stop();
-      handle = null;
-      activeConfig = {};
-      clipUrl = null;
-    },
-  };
-}
-
 const factories: Record<VectorPayloadKind, AttackVectorFactory> = {
-  deepfake: createDeepfakeVector,
+  deepfake: () => createStubVector("deepfake", "Deepfake Injection"),
   document: () => createStubVector("document", "Document Forgery"),
   behavioral: () => createStubVector("behavioral", "Behavioral Spoofing"),
   sdk: () => createStubVector("sdk", "SDK Interception"),
