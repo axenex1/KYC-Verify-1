@@ -63,7 +63,7 @@ export function PairingPanel({
         )}
 
         <p className="text-xs text-amber-700 dark:text-amber-300">
-          Companion app only — does not replace the system camera for other
+          Companion app only - does not replace the system camera for other
           Android apps.
         </p>
       </CardContent>
