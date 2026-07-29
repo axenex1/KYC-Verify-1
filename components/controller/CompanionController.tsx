@@ -14,6 +14,17 @@ import {
   DOCUMENT_TEMPLATES,
 } from "@/lib/documents/templates";
 import { DEFAULT_DOCUMENT_TRANSFORM } from "@/components/documents/TransformControls";
+import {
+  createLoopingClipStream,
+  getArmedAvatarClip,
+  pushCompanionClipBrowser,
+  subscribeArmedAvatarClip,
+  type HarnessAvatarClip,
+  type LoopingClipHandle,
+} from "@/lib/harness";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface CompanionControllerProps {
   sessionId: string;
@@ -24,6 +35,7 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   const outboundCanvasRef = useRef<HTMLCanvasElement>(null);
   const outboundStreamRef = useRef<MediaStream | null>(null);
   const cameraCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const clipHandleRef = useRef<LoopingClipHandle | null>(null);
   const documentStateRef = useRef({
     templateId: DEFAULT_DOCUMENT_TEMPLATE_ID,
     transform: DEFAULT_DOCUMENT_TRANSFORM,
@@ -40,6 +52,13 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   const [companionFacing, setCompanionFacing] = useState<CameraFacing>("user");
   const [mobileConnected, setMobileConnected] = useState(false);
   const [pairedAt, setPairedAt] = useState<string | null>(null);
+  const [armedClip, setArmedClip] = useState<HarnessAvatarClip | null>(null);
+  const [injectArmedOnPhone, setInjectArmedOnPhone] = useState(false);
+  const [outboundMode, setOutboundMode] = useState<"document" | "avatar">(
+    "document"
+  );
+  const [pushBusy, setPushBusy] = useState(false);
+  const [lastFinding, setLastFinding] = useState<string | null>(null);
 
   const onPeerDisconnected = useCallback(() => {
     setMobileConnected(false);
@@ -65,6 +84,14 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   } = webrtc;
 
   useEffect(() => {
+    setArmedClip(getArmedAvatarClip());
+    return subscribeArmedAvatarClip((clip) => {
+      setArmedClip(clip);
+      if (clip) setOutboundMode("avatar");
+    });
+  }, []);
+
+  useEffect(() => {
     syncMessageHandlerRef.current = (message: SyncMessage) => {
       void handleSignalingMessage(message);
 
@@ -82,6 +109,19 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
         auditLogger.log("camera_facing_changed", {
           facing: message.facing,
         });
+      }
+
+      if (message.type === "inject_state") {
+        setInjectArmedOnPhone(message.armed);
+      }
+
+      if (message.type === "finding_signal") {
+        setLastFinding(message.outcome);
+        auditLogger.log("companion_finding", {
+          outcome: message.outcome,
+          signals: message.signals,
+        });
+        toast.message(`Companion finding: ${message.outcome}`);
       }
     };
   }, [auditLogger, handleSignalingMessage]);
@@ -131,13 +171,44 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   }, [setHandlers]);
 
   useEffect(() => {
+    let cancelled = false;
+    async function armOutboundFromClip() {
+      clipHandleRef.current?.stop();
+      clipHandleRef.current = null;
+      if (outboundMode !== "avatar" || !armedClip?.clipUrl) return;
+      try {
+        const handle = await createLoopingClipStream(armedClip.clipUrl, {
+          fps: 15,
+          width: 1280,
+          height: 720,
+        });
+        if (cancelled) {
+          handle.stop();
+          return;
+        }
+        clipHandleRef.current = handle;
+        outboundStreamRef.current = handle.stream;
+        addLocalStream("desktop_to_mobile", handle.stream);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to loop armed avatar clip for companion outbound");
+      }
+    }
+    void armOutboundFromClip();
+    return () => {
+      cancelled = true;
+      clipHandleRef.current?.stop();
+      clipHandleRef.current = null;
+    };
+  }, [armedClip?.clipUrl, outboundMode, addLocalStream]);
+
+  useEffect(() => {
     if (sync.connectionState !== "paired" || !mobileConnected) return;
 
     if (shouldInitiate("desktop_to_mobile")) {
       const canvas = outboundCanvasRef.current;
-      if (!canvas) return;
-
       if (!outboundStreamRef.current) {
+        if (!canvas) return;
         outboundStreamRef.current = canvas.captureStream(15);
         addLocalStream("desktop_to_mobile", outboundStreamRef.current);
       }
@@ -149,9 +220,12 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
     shouldInitiate,
     createOffer,
     addLocalStream,
+    outboundMode,
+    armedClip?.clipUrl,
   ]);
 
   const updateOutboundCanvas = useCallback(() => {
+    if (outboundMode === "avatar" && clipHandleRef.current) return;
     const canvas = outboundCanvasRef.current;
     if (!canvas) return;
 
@@ -174,7 +248,7 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
       ctx.font = "24px sans-serif";
       ctx.fillText("KYC-Verify QA Stream", 40, 60);
     }
-  }, []);
+  }, [outboundMode]);
 
   useEffect(() => {
     if (sync.connectionState !== "paired") return;
@@ -182,15 +256,86 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
     return () => window.clearInterval(id);
   }, [sync.connectionState, updateOutboundCanvas]);
 
-  const handleCameraFrame = useCallback(
-    (canvas: HTMLCanvasElement) => {
-      cameraCanvasRef.current = canvas;
-    },
-    []
-  );
+  const handleCameraFrame = useCallback((canvas: HTMLCanvasElement) => {
+    cameraCanvasRef.current = canvas;
+  }, []);
+
+  const pushClipToCompanion = useCallback(async () => {
+    if (!pairToken || !armedClip?.clipUrl) {
+      toast.error("Arm an avatar clip in Document Gen first");
+      return;
+    }
+    setPushBusy(true);
+    try {
+      const result = await pushCompanionClipBrowser({
+        sessionId,
+        token: pairToken,
+        clipUrl: armedClip.clipUrl,
+        armed: true,
+      });
+      sync.send({
+        type: "inject_state",
+        sessionId,
+        armed: true,
+        mode: "avatar",
+      });
+      setInjectArmedOnPhone(true);
+      auditLogger.log("companion_clip_pushed", {
+        clipId: result.clipId,
+        byteLength: result.byteLength,
+      });
+      toast.success("Clip pushed to companion — arm inject on phone");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Push failed");
+    } finally {
+      setPushBusy(false);
+    }
+  }, [armedClip?.clipUrl, auditLogger, pairToken, sessionId, sync]);
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline" className="font-mono text-[10px]">
+          outbound {outboundMode}
+        </Badge>
+        {armedClip ? (
+          <Badge className="font-mono text-[10px]">avatar clip armed</Badge>
+        ) : (
+          <Badge variant="secondary" className="font-mono text-[10px]">
+            no avatar clip
+          </Badge>
+        )}
+        {injectArmedOnPhone && (
+          <Badge className="font-mono text-[10px] text-neon-green">
+            phone inject armed
+          </Badge>
+        )}
+        {lastFinding && (
+          <Badge variant="outline" className="font-mono text-[10px]">
+            finding {lastFinding}
+          </Badge>
+        )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="font-mono text-xs"
+          onClick={() =>
+            setOutboundMode((m) => (m === "avatar" ? "document" : "avatar"))
+          }
+          disabled={!armedClip}
+        >
+          Use {outboundMode === "avatar" ? "document" : "avatar"} outbound
+        </Button>
+        <Button
+          size="sm"
+          className="font-mono text-xs"
+          onClick={() => void pushClipToCompanion()}
+          disabled={!armedClip || !pairToken || pushBusy}
+        >
+          {pushBusy ? "Pushing…" : "Push clip to companion"}
+        </Button>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
         <PairingPanel
           sessionId={sessionId}
@@ -199,6 +344,7 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
           connectionState={sync.connectionState}
           syncServerAvailable={syncServerAvailable}
           onReconnect={sync.reconnect}
+          injectArmed={injectArmedOnPhone}
         />
 
         <div className="lg:col-span-2">
