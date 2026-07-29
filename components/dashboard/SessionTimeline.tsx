@@ -21,7 +21,7 @@ function formatDate(iso: string): string {
 }
 
 function formatDuration(ms?: number): string {
-  if (!ms) return "—";
+  if (!ms) return "-";
   const seconds = Math.round(ms / 1000);
   if (seconds < 60) return `${seconds}s`;
   return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
