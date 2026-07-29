@@ -3,21 +3,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-sm border px-2 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider transition-[color,background-color,border-color] duration-150 focus:outline-none focus:ring-2 focus:ring-neon-green/40 focus:ring-offset-1 focus:ring-offset-background",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+          "border-neon-green/30 bg-neon-green/10 text-neon-green",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-line bg-surface text-muted-foreground",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
+          "border-neon-red/35 bg-neon-red/10 text-neon-red",
+        outline: "border-line text-foreground",
         success:
-          "border-transparent bg-emerald-600/15 text-emerald-700 dark:text-emerald-300",
+          "border-neon-green/30 bg-neon-green/10 text-neon-green",
         warning:
-          "border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-300",
+          "border-neon-amber/35 bg-neon-amber/10 text-neon-amber",
       },
     },
     defaultVariants: {

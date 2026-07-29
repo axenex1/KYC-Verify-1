@@ -56,7 +56,7 @@ export function ActivityHeatmap({ cells }: ActivityHeatmapProps) {
                     return (
                       <div
                         key={`${day}-${hour}`}
-                        title={`${formatDayLabel(day)} ${hour}:00 — ${count} session(s)`}
+                        title={`${formatDayLabel(day)} ${hour}:00 - ${count} session(s)`}
                         className={cn(
                           "aspect-square rounded-sm",
                           intensityClass(intensity)

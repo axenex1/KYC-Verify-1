@@ -5,6 +5,10 @@ import { CameraCapture, type CameraSource } from "@/components/camera/CameraCapt
 import type { CameraFacing } from "@/lib/constants";
 import { BackgroundPicker } from "@/components/background/BackgroundPicker";
 import { DocumentQAPanel, type DocumentQAState } from "@/components/documents/DocumentQAPanel";
+import {
+  DocumentGenerationPanel,
+  type DocumentGenerationState,
+} from "@/components/documents/DocumentGenerationPanel";
 import { VerifyTabs, type VerifyTab } from "@/components/verify/VerifyTabs";
 import { PromptCard } from "./PromptCard";
 import { LivenessProgress } from "./LivenessProgress";
@@ -46,6 +50,10 @@ interface LivenessPromptControllerProps {
   onDocumentTransformApplied?: (transform: DocumentTransform) => void;
   onDocumentTransformRejected?: () => void;
   onDocumentStateChange?: (state: DocumentQAState) => void;
+  /** Fired once when the liveness run completes and export payload is ready. */
+  onComplete?: (exportData: SessionExport) => void;
+  /** Hide the built-in completion card (parent handles post-run UI). */
+  hideCompletionCard?: boolean;
 }
 
 export function LivenessPromptController({
@@ -61,6 +69,8 @@ export function LivenessPromptController({
   onDocumentTransformApplied,
   onDocumentTransformRejected,
   onDocumentStateChange,
+  onComplete,
+  hideCompletionCard = false,
 }: LivenessPromptControllerProps) {
   const {
     currentStepIndex,
@@ -95,6 +105,8 @@ export function LivenessPromptController({
   const [documentQAState, setDocumentQAState] = useState<DocumentQAState | null>(
     null
   );
+  const [documentGenerationState, setDocumentGenerationState] =
+    useState<DocumentGenerationState | null>(null);
   const [exportData, setExportData] = useState<SessionExport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -228,11 +240,21 @@ export function LivenessPromptController({
                 appliedTransform: documentQAState.appliedTransform,
               }
             : undefined,
+          documentGeneration: documentGenerationState
+            ? {
+                avatarId: documentGenerationState.avatarId ?? undefined,
+                avatarName: documentGenerationState.avatarName ?? undefined,
+                status: documentGenerationState.status ?? undefined,
+                sourceFileName:
+                  documentGenerationState.sourceFileName ?? undefined,
+              }
+            : undefined,
           pairedDevice,
         };
 
         auditLogger.log("session_completed", { sessionId });
         setExportData(exportPayload);
+        onComplete?.(exportPayload);
 
         await fetch(`/api/sessions/${sessionId}/export`, {
           method: "POST",
@@ -261,8 +283,11 @@ export function LivenessPromptController({
       updateMetrics,
       facingMode,
       documentQAState,
+      documentGenerationState,
       pairedDevice,
       companionFacingMode,
+      onComplete,
+      auditLogger,
     ]
   );
 
@@ -355,7 +380,7 @@ export function LivenessPromptController({
     URL.revokeObjectURL(url);
   };
 
-  if (isCompleted && exportData) {
+  if (isCompleted && exportData && !hideCompletionCard) {
     const passedCount = exportData.promptResults.filter((r) => r.passed).length;
     const passRate = passedCount / exportData.promptResults.length;
 
@@ -404,7 +429,7 @@ export function LivenessPromptController({
                   Head Rotation
                 </p>
                 <p className="mt-1 text-2xl font-bold tabular-nums">
-                  {exportData.metrics.headRotationMaxDeg?.toFixed(1) ?? "—"}°
+                  {exportData.metrics.headRotationMaxDeg?.toFixed(1) ?? "-"}°
                 </p>
                 <p className="text-xs text-muted-foreground">max detected</p>
               </div>
@@ -413,7 +438,7 @@ export function LivenessPromptController({
                   Avg FPS
                 </p>
                 <p className="mt-1 text-2xl font-bold tabular-nums">
-                  {exportData.metrics.avgFps?.toFixed(1) ?? "—"}
+                  {exportData.metrics.avgFps?.toFixed(1) ?? "-"}
                 </p>
                 <p className="text-xs text-muted-foreground">frames/second</p>
               </div>
@@ -461,6 +486,21 @@ export function LivenessPromptController({
     );
   }
 
+  if (isCompleted && exportData && hideCompletionCard) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 border border-line bg-surface px-4 py-10 text-center">
+        <CheckCircle2 className="h-6 w-6 text-neon-green" />
+        <p className="font-mono text-sm uppercase tracking-wider text-neon-green">
+          Probe capture complete
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Session <code className="font-mono">{sessionId}</code> - parent console
+          owns verdict / findings.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 pb-[env(safe-area-inset-bottom)]">
       <VerifyTabs active={activeTab} onChange={setActiveTab} />
@@ -469,7 +509,7 @@ export function LivenessPromptController({
         <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-100">
           <Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            Mobile QA mode — test on your phone browser. Use rear camera toggle
+            Mobile QA mode - test on your phone browser. Use rear camera toggle
             for document-style capture flows.
           </p>
         </div>
@@ -526,7 +566,7 @@ export function LivenessPromptController({
             )}
           </div>
         </div>
-      ) : (
+      ) : activeTab === "document" ? (
         <DocumentQAPanel
           auditLogger={auditLogger}
           onStateChange={(state) => {
@@ -536,6 +576,11 @@ export function LivenessPromptController({
           onTransformProposed={onDocumentTransformProposed}
           onTransformApplied={onDocumentTransformApplied}
           onTransformRejected={onDocumentTransformRejected}
+        />
+      ) : (
+        <DocumentGenerationPanel
+          auditLogger={auditLogger}
+          onStateChange={setDocumentGenerationState}
         />
       )}
     </div>

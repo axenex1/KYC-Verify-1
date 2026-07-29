@@ -46,19 +46,22 @@ export default function DevUiPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-8">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 border border-line bg-console-rail px-4 py-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">UI Component Lab</h1>
+          <p className="lbl">COMPONENT LAB</p>
+          <h1 className="mt-1 font-mono text-xl font-semibold tracking-tight text-neon-green">
+            KYC_BREACH//CONSOLE primitives
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Internal showcase for interactive states — not linked from prod nav.
+            Internal showcase for interactive states - not linked from prod nav.
           </p>
         </div>
         <ThemeToggle />
       </div>
 
-      <Card>
+      <Card className="border-line bg-surface">
         <CardHeader>
-          <CardTitle>Buttons</CardTitle>
+          <CardTitle className="font-mono text-neon-cyan">Buttons</CardTitle>
           <CardDescription>
             Hover, focus-visible, disabled, and loading states
           </CardDescription>
@@ -67,6 +70,7 @@ export default function DevUiPage() {
           <Button>Default</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="outline">Outline</Button>
+          <Button variant="console">Console</Button>
           <Button variant="destructive">Destructive</Button>
           <Button variant="ghost">Ghost</Button>
           <Button disabled>Disabled</Button>
@@ -122,12 +126,16 @@ export default function DevUiPage() {
             <TabsList>
               <TabsTrigger value="liveness">Liveness</TabsTrigger>
               <TabsTrigger value="document">Document QA</TabsTrigger>
+              <TabsTrigger value="generate">Document Gen</TabsTrigger>
             </TabsList>
             <TabsContent value="liveness" className="text-sm text-muted-foreground">
               Prompt sequencing panel content
             </TabsContent>
             <TabsContent value="document" className="text-sm text-muted-foreground">
               Transform controls panel content
+            </TabsContent>
+            <TabsContent value="generate" className="text-sm text-muted-foreground">
+              Upload an ID photo and create a Runway avatar for probe injection
             </TabsContent>
           </Tabs>
 

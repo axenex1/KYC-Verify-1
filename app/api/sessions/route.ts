@@ -11,6 +11,8 @@ import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
 const CreateSessionSchema = z.object({
   mode: z.literal("qa"),
   promptSet: z.string().default(STANDARD_PROMPT_SET),
+  engagementId: z.string().optional(),
+  targetId: z.string().optional(),
 });
 
 export async function GET(request: Request) {
@@ -35,12 +37,17 @@ export async function POST(request: Request) {
     const sessionId = randomUUID();
     const createdAt = new Date().toISOString();
 
-    createServerSession(sessionId, parsed.promptSet);
+    createServerSession(sessionId, parsed.promptSet, {
+      engagementId: parsed.engagementId,
+      targetId: parsed.targetId,
+    });
 
     return NextResponse.json({
       sessionId,
       createdAt,
       environment: "qa" as const,
+      engagementId: parsed.engagementId ?? null,
+      targetId: parsed.targetId ?? null,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

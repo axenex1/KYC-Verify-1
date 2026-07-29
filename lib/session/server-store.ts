@@ -1,50 +1,38 @@
 import type { SessionExport } from "@/types/session";
+import {
+  createServerSessionRecord,
+  getServerSessionRecord,
+  listServerSessionRecords,
+  updateServerSessionExportRecord,
+  type ServerSession,
+} from "@/lib/db/sessions";
 
-export interface ServerSession {
-  sessionId: string;
-  environment: "qa";
-  promptSet: string;
-  createdAt: string;
-  completedAt?: string;
-  export?: SessionExport;
-}
+export type { ServerSession };
 
-const sessions = new Map<string, ServerSession>();
-
+/**
+ * Persistent session store backed by SQLite.
+ * Function signatures match the previous in-memory Map API so
+ * existing `/api/sessions` routes keep working unchanged.
+ */
 export function createServerSession(
   sessionId: string,
-  promptSet: string
+  promptSet: string,
+  opts?: { engagementId?: string; targetId?: string }
 ): ServerSession {
-  const session: ServerSession = {
-    sessionId,
-    environment: "qa",
-    promptSet,
-    createdAt: new Date().toISOString(),
-  };
-  sessions.set(sessionId, session);
-  return session;
+  return createServerSessionRecord(sessionId, promptSet, opts);
 }
 
 export function getServerSession(sessionId: string): ServerSession | undefined {
-  return sessions.get(sessionId);
+  return getServerSessionRecord(sessionId);
 }
 
 export function updateServerSessionExport(
   sessionId: string,
   exportData: SessionExport
 ): ServerSession | undefined {
-  const session = sessions.get(sessionId);
-  if (!session) return undefined;
-
-  session.export = exportData;
-  session.completedAt = exportData.completedAt;
-  sessions.set(sessionId, session);
-  return session;
+  return updateServerSessionExportRecord(sessionId, exportData);
 }
 
 export function listServerSessions(): ServerSession[] {
-  return Array.from(sessions.values()).sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  return listServerSessionRecords();
 }

@@ -49,7 +49,7 @@ const stats = [
     format: (s: DashboardStatsProps["summary"]) =>
       s.avgSessionDurationMs > 0
         ? `${Math.round(s.avgSessionDurationMs / 1000)}s`
-        : "—",
+        : "-",
     accent:
       "bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-amber-500/20",
   },

@@ -60,7 +60,7 @@ export function DocumentPreview({
       {/* QA warning overlay */}
       <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-300 backdrop-blur-sm ring-1 ring-red-500/30">
-          QA Test — Not Valid ID
+          QA Test - Not Valid ID
         </span>
       </div>
     </div>

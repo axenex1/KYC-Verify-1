@@ -88,7 +88,7 @@ export function BackgroundPicker({
       {lowLightWarning && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-200/60 bg-amber-50/50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-100">
           <div className="mt-0.5 h-3 w-3 shrink-0 rounded-full bg-amber-400" />
-          Low ambient light detected — consider enabling blur or solid
+          Low ambient light detected - consider enabling blur or solid
           background.
         </div>
       )}

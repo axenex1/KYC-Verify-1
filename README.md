@@ -1,13 +1,13 @@
-# KYC-Verify QA Liveness Harness
+# KYC_BREACH//CONSOLE
 
-Desktop-first internal QA tool for testing KYC provider liveness integrations with simulated behavioral signals.
+Authorized **KYC Breach Console** — an Electron desktop pentest console for red-team/QA operators at crypto trading establishments. Probe your own deployed KYC vendor stacks (Sumsub, Onfido, Jumio, Veriff sandboxes) plus a local MediaPipe fallback target for fraudulent signup loopholes, then triage findings into remediation reports.
 
 ## Stack
 
-- Next.js (App Router) + TypeScript
-- Tailwind CSS v3 + shadcn/ui (Radix) + next-themes
-- Zustand session store (`sessionStorage`) + preferences (`localStorage`)
-- MediaPipe face landmarking, WebRTC companion sync, Electron packaging
+- Next.js (App Router) + TypeScript + Electron
+- Tailwind CSS + shadcn/ui + JetBrains Mono console chrome
+- SQLite (`better-sqlite3`) persistence
+- MediaPipe face landmarking, WebRTC companion sync, pluggable target adapters
 
 ## Scripts
 
@@ -16,26 +16,40 @@ npm install
 npm run dev          # Next.js UI
 npm run dev:sync     # WebSocket pairing server (:3001)
 npm run dev:all      # UI + sync together
-npm run build        # Production build (type-check gate)
-npm run start
+npm run build
+npm run smoke        # HTTP smoke against a running server
+npm run mcp:console  # Locked-down MCP command runner
 npm run electron:dev # Requires prior build:standalone
 npm run dist:win     # Windows NSIS package
 ```
 
-## Routes
+## Operator scopes
 
 | Path | Purpose |
 |------|---------|
-| `/` | Create QA or companion session |
-| `/verify/[sessionId]` | Liveness capture |
-| `/controller/[sessionId]` | Desktop companion + document QA |
-| `/dashboard` | Session analytics |
-| `/dev/ui` | Internal component lab |
+| `/` | Mission Control |
+| `/targets` | Target Registry |
+| `/engagements/new` | Engagement Setup |
+| `/engagements/[id]/probe` | Live Probe Run |
+| `/engagements/[id]/probe/[runId]` | Probe Run (pinned run) |
+| `/engagements/[id]/runs/[runId]` | Forensics / Run Replay |
+| `/engagements/[id]/pair` | Companion Pair |
+| `/vectors` | Vector Library |
+| `/findings` | Findings Triage Board |
+| `/operator` | Operator Settings (credential vault, MCP, theme) |
+| `/dev/ui` | Component lab |
 
-## UI state layers
+## Document Generation (Runway)
 
-1. **Session** — `lib/session/store.ts` → `sessionStorage` key `kyc-verify-session:<id>`
-2. **Preferences** — `lib/preferences/store.ts` → `localStorage` key `kyc-verify-preferences`
-3. **Ephemeral** — React state/refs for camera, WebRTC, dialogs
+Inside a Live Probe capture session, open the **Document Gen** tab to upload an ID/passport photo and create a Runway avatar (`POST /v1/avatars`) for synthetic-identity probes.
 
-Do not mix session QA payloads with preference keys.
+1. Copy `.env.example` → `.env`
+2. Set `RUNWAYML_API_SECRET` from [dev.runwayml.com](https://dev.runwayml.com/)
+3. Restart `npm run dev:all`
+4. Start a probe → **Document Gen** → upload face crop → **Create Runway avatar**
+
+The API key stays server-side. Avatar id / status are audited into the session export.
+
+## Legal framing
+
+Every screen shows an **AUTHORIZED ENGAGEMENT** badge. Engagement setup requires an operator name and authorization reference. Use only against systems you are authorized to test.

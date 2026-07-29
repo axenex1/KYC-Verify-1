@@ -134,7 +134,7 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
               label: "Completed",
               value: exportData.completedAt
                 ? new Date(exportData.completedAt).toLocaleString()
-                : "—",
+                : "-",
             },
             {
               label: "Platform",
@@ -194,7 +194,9 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
         <EventTimeline events={events} />
       </div>
 
-      {(exportData.pairedDevice || exportData.documentQA) && (
+      {(exportData.pairedDevice ||
+        exportData.documentQA ||
+        exportData.documentGeneration) && (
         <Card>
           <CardHeader>
             <CardTitle>Companion & Document QA</CardTitle>
@@ -228,6 +230,26 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
                 <p className="text-xs font-mono">
                   scale {exportData.documentQA.appliedTransform.scale} · rot{" "}
                   {exportData.documentQA.appliedTransform.rotationDeg}°
+                </p>
+              </div>
+            )}
+            {exportData.documentGeneration?.avatarId && (
+              <div>
+                <p className="text-zinc-500">Runway avatar</p>
+                <p className="font-semibold">
+                  {exportData.documentGeneration.avatarName ?? "Avatar"} (
+                  {exportData.documentGeneration.status ?? "unknown"})
+                </p>
+                <p className="mt-1 break-all font-mono text-[10px] text-zinc-500">
+                  {exportData.documentGeneration.avatarId}
+                </p>
+              </div>
+            )}
+            {exportData.documentGeneration?.sourceFileName && (
+              <div>
+                <p className="text-zinc-500">Source document</p>
+                <p className="font-semibold">
+                  {exportData.documentGeneration.sourceFileName}
                 </p>
               </div>
             )}
@@ -301,13 +323,13 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
             <div>
               <p className="text-zinc-500">Avg FPS</p>
               <p className="font-semibold">
-                {exportData.metrics.avgFps?.toFixed(1) ?? "—"}
+                {exportData.metrics.avgFps?.toFixed(1) ?? "-"}
               </p>
             </div>
             <div>
               <p className="text-zinc-500">Max head rotation</p>
               <p className="font-semibold">
-                {exportData.metrics.headRotationMaxDeg?.toFixed(0) ?? "—"}°
+                {exportData.metrics.headRotationMaxDeg?.toFixed(0) ?? "-"}°
               </p>
             </div>
             <div>
@@ -315,7 +337,7 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
               <p className="font-semibold">
                 {exportData.metrics.avgBlinkIntervalMs
                   ? `${Math.round(exportData.metrics.avgBlinkIntervalMs)}ms`
-                  : "—"}
+                  : "-"}
               </p>
             </div>
           </CardContent>
