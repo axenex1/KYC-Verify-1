@@ -20,6 +20,9 @@
 /dist-electron
 /out-standalone
 
+# local console persistence
+.data/
+
 # misc
 .DS_Store
 *.pem
@@ -40,3 +43,7 @@ next-env.d.ts
 
 # electron
 *.asar
+
+# electron-builder output
+/dist-electron-build/
+
