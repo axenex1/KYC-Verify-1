@@ -2,25 +2,28 @@
   "name": "kyc-verify-1",
   "version": "0.1.0",
   "private": true,
-  "description": "KYC-Verify | QA Liveness Harness — desktop-first interactive UI",
+  "description": "KYC Breach Console — authorized red-team pentest console for crypto-exchange KYC stacks",
   "scripts": {
     "dev": "next dev",
     "dev:sync": "tsx scripts/sync-server.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:sync\"",
+    "adb:reverse": "node scripts/adb-reverse.mjs",
     "build": "next build",
     "build:standalone": "next build && node scripts/prepare-standalone.mjs",
     "start": "next start",
     "smoke": "node scripts/smoke.mjs",
+    "mcp:g0dm0d3": "tsx mcp/g0dm0d3-server/index.ts",
+    "mcp:console": "tsx mcp/g0dm0d3-server/index.ts",
     "lint": "next lint",
     "electron:dev": "electron electron/main.js",
-    "dist:win": "npm run build:standalone && electron-builder --win nsis"
+    "dist:win": "npm run build:standalone && npx rimraf dist-electron-build && electron-builder --win nsis"
   },
   "main": "electron/main.js",
   "build": {
     "appId": "dev.khaos.kycverify1",
-    "productName": "KYC-Verify",
+    "productName": "KYC_BREACH Console",
     "directories": {
-      "output": "dist-electron"
+      "output": "dist-electron-build"
     },
     "files": [
       "electron/**/*"
@@ -52,6 +55,7 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.35",
+    "@modelcontextprotocol/sdk": "^1.24.3",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",
@@ -61,6 +65,8 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@runwayml/sdk": "^4.13.1",
+    "better-sqlite3": "^13.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "concurrently": "^9.1.2",
@@ -78,13 +84,14 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.21",
-    "electron": "^35.2.1",
+    "electron": "^43.2.0",
     "electron-builder": "^26.0.12",
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.3.3",
@@ -93,5 +100,14 @@
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
+  },
+  "allowScripts": {
+    "electron@35.7.5": true,
+    "electron-winstaller@5.4.0": true,
+    "esbuild@0.28.1": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true,
+    "es5-ext@0.10.64": true,
+    "better-sqlite3@13.0.1": true
   }
 }

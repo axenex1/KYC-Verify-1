@@ -4,25 +4,28 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,background-color,border-color,transform,opacity,box-shadow] duration-[var(--response-fast)] ease-[var(--ease-spring)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-green/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] hover:bg-primary/90",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary/90 text-secondary-foreground backdrop-blur-sm hover:bg-secondary",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "glass-chip text-foreground hover:border-neon-green/30 hover:bg-surface-elevated/80",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        ghost: "hover:bg-surface-elevated/70 hover:text-foreground",
+        link: "text-primary underline-offset-4 hover:underline active:scale-100",
+        console:
+          "border border-neon-green/30 bg-neon-green/10 font-mono text-neon-green backdrop-blur-sm hover:bg-neon-green/15 shadow-[inset_0_1px_0_rgba(0,255,136,0.1)]",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-11 rounded-md px-6 font-mono text-sm",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {
