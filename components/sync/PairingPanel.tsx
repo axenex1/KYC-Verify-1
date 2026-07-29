@@ -12,6 +12,7 @@ interface PairingPanelProps {
   connectionState: SyncConnectionState;
   syncServerAvailable: boolean;
   onReconnect?: () => void;
+  injectArmed?: boolean;
 }
 
 export function PairingPanel({
@@ -21,6 +22,7 @@ export function PairingPanel({
   connectionState,
   syncServerAvailable,
   onReconnect,
+  injectArmed = false,
 }: PairingPanelProps) {
   const pairPayload = JSON.stringify({
     sessionId,
@@ -49,7 +51,10 @@ export function PairingPanel({
             <code className="text-xs">npm run adb:reverse</code>
           </p>
           <p className="text-muted-foreground">
-            3. Open the KYC-Verify Companion app and scan or enter session ID
+            3. Open the KYC Companion app and scan the QR (or enter session ID)
+          </p>
+          <p className="text-muted-foreground">
+            4. Push an armed Document Gen clip, then Arm inject on the phone
           </p>
         </div>
 
@@ -62,9 +67,15 @@ export function PairingPanel({
           </div>
         )}
 
+        {injectArmed && (
+          <p className="text-xs text-neon-green font-mono">
+            Phone reports virtual-cam inject ARMED
+          </p>
+        )}
+
         <p className="text-xs text-amber-700 dark:text-amber-300">
-          Companion app only - does not replace the system camera for other
-          Android apps.
+          Stealth pass against third-party KYC apps requires the Magisk virtcam
+          hook on a rooted lab device. See android/README.md.
         </p>
       </CardContent>
     </Card>

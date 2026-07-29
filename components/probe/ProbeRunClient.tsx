@@ -18,6 +18,12 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClientAuditLogger } from "@/lib/audit/logger";
 import { listVectors, createVector } from "@/lib/vectors/registry";
+import type { AttackVector } from "@/lib/vectors/types";
+import {
+  getArmedAvatarClip,
+  subscribeArmedAvatarClip,
+  type HarnessAvatarClip,
+} from "@/lib/harness";
 import {
   extractFindings,
   toCreateFindingInput,
@@ -93,8 +99,26 @@ export function ProbeRunClient({
   );
   const [filedFindings, setFiledFindings] = React.useState<Finding[]>([]);
   const [busy, setBusy] = React.useState(false);
+  const [armedClip, setArmedClip] = React.useState<HarnessAvatarClip | null>(
+    null
+  );
+  const [injectedStream, setInjectedStream] =
+    React.useState<MediaStream | null>(null);
+  const vectorRef = React.useRef<AttackVector | null>(null);
 
   const catalog = React.useMemo(() => listVectors(), []);
+
+  React.useEffect(() => {
+    setArmedClip(getArmedAvatarClip());
+    return subscribeArmedAvatarClip(setArmedClip);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      void vectorRef.current?.teardown();
+      vectorRef.current = null;
+    };
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -154,10 +178,37 @@ export function ProbeRunClient({
     setSignalLines(["arming probe run…"]);
 
     try {
+      void vectorRef.current?.teardown();
+      setInjectedStream(null);
+
       const vector = createVector(activeVector.kind);
-      const payload = await vector.configure(activeVector.config ?? {});
+      vectorRef.current = vector;
+      const config = { ...(activeVector.config ?? {}) };
+      if (
+        activeVector.kind === "deepfake" &&
+        !config.clipUrl &&
+        armedClip?.clipUrl
+      ) {
+        config.clipUrl = armedClip.clipUrl;
+        config.armedAt = armedClip.armedAt;
+        config.avatarId = armedClip.avatarId ?? undefined;
+      }
+      const payload = await vector.configure(config);
       setActiveVector(payload);
       pushLine(formatSignalLine("vector_configured", { kind: payload.kind }));
+
+      if (activeVector.kind === "deepfake" && payload.config?.clipUrl) {
+        const stream = await vector.inject(null);
+        setInjectedStream(stream);
+        pushLine(
+          formatSignalLine("deepfake_injected", {
+            clipUrl: String(payload.config.clipUrl).slice(0, 64),
+          })
+        );
+        auditLogger.log("deepfake_injected", {
+          hasStream: Boolean(stream),
+        });
+      }
 
       const sessionRes = await fetch("/api/sessions", {
         method: "POST",
@@ -219,6 +270,7 @@ export function ProbeRunClient({
     auditLogger,
     pushLine,
     captureMode,
+    armedClip,
   ]);
 
   const finalizeRun = React.useCallback(
@@ -316,6 +368,9 @@ export function ProbeRunClient({
         });
 
         setRunning(false);
+        void vectorRef.current?.teardown();
+        vectorRef.current = null;
+        setInjectedStream(null);
         pushLine(formatSignalLine("probe_complete", { findings: created.length }));
       } catch (e) {
         pushLine(
@@ -461,6 +516,27 @@ export function ProbeRunClient({
 
             <div className="border-t border-line pt-3">
               <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Armed avatar clip
+              </p>
+              {armedClip ? (
+                <div className="space-y-1 border border-neon-green/30 bg-neon-green/5 p-2 font-mono text-[10px] text-neon-green">
+                  <p className="truncate">
+                    {armedClip.avatarName ?? "clip"} ·{" "}
+                    {new Date(armedClip.armedAt).toLocaleString()}
+                  </p>
+                  <p className="truncate text-muted-foreground">
+                    {armedClip.clipUrl}
+                  </p>
+                </div>
+              ) : (
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  None — generate motion in Document Gen and Arm for Probe.
+                </p>
+              )}
+            </div>
+
+            <div className="border-t border-line pt-3">
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                 Capture mode
               </p>
               <div className="grid grid-cols-2 gap-1.5">
@@ -591,6 +667,9 @@ export function ProbeRunClient({
                   sessionId={sessionId}
                   auditLogger={auditLogger}
                   hideCompletionCard
+                  cameraSource={injectedStream ? "remote" : "local"}
+                  remoteStream={injectedStream}
+                  showLocalCameraSwitcher={!injectedStream}
                   onComplete={(data) => void finalizeRun(data)}
                 />
               </div>
@@ -599,6 +678,9 @@ export function ProbeRunClient({
                 sessionId={sessionId}
                 auditLogger={auditLogger}
                 hideCompletionCard
+                cameraSource={injectedStream ? "remote" : "local"}
+                remoteStream={injectedStream}
+                showLocalCameraSwitcher={!injectedStream}
                 onComplete={(data) => void finalizeRun(data)}
               />
             )}

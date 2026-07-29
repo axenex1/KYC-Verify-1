@@ -45,10 +45,10 @@ export function RemoteCameraSource({
   return (
     <>
       <video ref={videoRef} className="hidden" playsInline muted autoPlay />
-      {stream ? children : (
+          {stream ? children : (
         <div className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
           <p className="text-sm text-zinc-500">
-            Waiting for mobile camera stream…
+            Waiting for camera / inject stream…
           </p>
         </div>
       )}

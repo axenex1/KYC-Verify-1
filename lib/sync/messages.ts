@@ -75,6 +75,25 @@ export const PongSchema = BaseMessageSchema.extend({
   type: z.literal("pong"),
 });
 
+export const InjectStateSchema = BaseMessageSchema.extend({
+  type: z.literal("inject_state"),
+  armed: z.boolean(),
+  mode: z.enum(["avatar", "document"]).default("avatar"),
+});
+
+export const ClipReadySchema = BaseMessageSchema.extend({
+  type: z.literal("clip_ready"),
+  clipId: z.string(),
+  mimeType: z.string().default("video/mp4"),
+  byteLength: z.number().nonnegative().default(0),
+});
+
+export const FindingSignalSchema = BaseMessageSchema.extend({
+  type: z.literal("finding_signal"),
+  outcome: z.enum(["pass", "fail", "review", "detected", "error", "unknown"]),
+  signals: z.record(z.string(), z.string()).default({}),
+});
+
 export const SyncMessageSchema = z.discriminatedUnion("type", [
   PairRequestSchema,
   PairAckSchema,
@@ -87,6 +106,9 @@ export const SyncMessageSchema = z.discriminatedUnion("type", [
   IceCandidateSchema,
   PingSchema,
   PongSchema,
+  InjectStateSchema,
+  ClipReadySchema,
+  FindingSignalSchema,
 ]);
 
 export type SyncMessage = z.infer<typeof SyncMessageSchema>;
