@@ -1,17 +1,15 @@
 /**
- * Reference Camera2 ImageReader interceptor contract for lab Zygisk builds.
+ * Shared Camera2 / MediaNDK interceptor contract for lab Zygisk builds.
  *
- * This is documentation + a non-linked stub. Drop a real .so into
- * android/magisk-module/zygisk/arm64-v8a.so for production lab devices.
+ * Implemented in src/frame_ring.cpp; loaded via zygisk/arm64-v8a.so.
  *
- * Hook points (conceptual):
- * 1. CameraDevice.createCaptureSession — detect FRONT lens
- * 2. ImageReader.acquireLatestImage — replace YUV/NV21 planes from
- *    /data/local/tmp/kyc_virtcam.frame when armed file is "1"
- * 3. CameraCharacteristics getters — overlay values from
- *    /data/local/tmp/kyc_virtcam.profile
- * 4. SensorEventQueue — optional IMU from /data/local/tmp/kyc_virtcam.imu
+ * Hook points:
+ * 1. AImage_getPlaneData (MediaNDK) — replace Y/UV when armed
+ * 2. (Plan B) CameraCharacteristics overlays from kyc_virtcam.profile
+ * 3. (Plan B) SensorEventQueue — optional IMU from kyc_virtcam.imu
  */
+
+#pragma once
 
 #include <stdint.h>
 
@@ -29,10 +27,10 @@ typedef struct {
   uint64_t timestamp_ns;
 } KycVirtCamHeader;
 
-/* Implemented by OEM-specific zygisk binary (not shipped as source here). */
 int kyc_virtcam_should_replace_front_camera(void);
 int kyc_virtcam_copy_nv21(uint8_t *dst, uint32_t dst_capacity,
                           uint32_t *out_w, uint32_t *out_h);
+int kyc_virtcam_read_profile_value(const char *key, char *out, uint32_t out_len);
 
 #ifdef __cplusplus
 }

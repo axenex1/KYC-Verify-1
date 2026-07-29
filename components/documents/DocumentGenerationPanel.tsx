@@ -991,7 +991,7 @@ export function DocumentGenerationPanel({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="console"
               className="gap-2 font-mono text-xs"
               disabled={busyMotion || configured === false || !cropBlob}
               onClick={() =>
@@ -1005,7 +1005,9 @@ export function DocumentGenerationPanel({
               ) : (
                 <Video className="h-4 w-4" />
               )}
-              {customPoseMode ? "Generate pose video" : "Generate camera feed"}
+              {customPoseMode
+                ? "Generate pose video"
+                : "Build camera feed (auto-arm)"}
             </Button>
             <Button
               type="button"

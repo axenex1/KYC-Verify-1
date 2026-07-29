@@ -93,6 +93,9 @@ class VirtualCamService : Service() {
                 fps = 15,
             ).also { it.start(file) }
         }
+        // Plan B: correlate IMU spoof with persistent L/R/U/D head-motion period.
+        imu?.startSpoof(scope, yawDeg = 25f, pitchDeg = 15f, periodMs = 8000L)
+        MagiskHookBridge.writeSeamOffsetMs(40)
         val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(NOTIF_ID, buildNotification(armed = true))
         Log.i(TAG, "Virtual cam ARMED clip=$clipPath hook=${MagiskHookBridge.isHookPresent()}")

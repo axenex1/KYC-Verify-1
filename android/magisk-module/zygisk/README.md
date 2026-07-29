@@ -1,15 +1,20 @@
-# KYC VirtCam Zygisk Camera2 interceptor (lab devices)
+# KYC VirtCam Zygisk Camera2 interceptor (lab)
 
-This folder is where the OEM-specific Zygisk `.so` that hooks Camera2
-`ImageReader` / HAL buffer dequeue should live:
+Lab-only Magisk Zygisk module that replaces **MediaNDK `AImage` plane data** with NV21 frames from the Companion frame ring when inject is armed.
 
-- `arm64-v8a.so`
-- `armeabi-v7a.so` (optional)
+## Build (requires Android NDK)
+
+```powershell
+cd android/magisk-module
+.\build-zygisk.ps1    # writes zygisk/arm64-v8a.so
+.\package-magisk.ps1  # writes kyc_virtcam-magisk.zip
+```
+
+Set `ANDROID_NDK_HOME` if the NDK is not under `%LOCALAPPDATA%\Android\Sdk\ndk`.
 
 ## Frame contract
 
-When `/data/local/tmp/kyc_virtcam.armed` contains `1`, replace front-camera
-NV21 (or convert to the stream's requested format) using the ring file:
+When `/data/local/tmp/kyc_virtcam.armed` contains `1`, replace ImageReader planes using:
 
 ```
 offset  size  field
@@ -23,18 +28,38 @@ offset  size  field
 32      N     payload (width*height*3/2 for NV21)
 ```
 
-Also read:
+Also readable (Plan B):
 
 - `/data/local/tmp/kyc_virtcam.profile` — key=value CameraCharacteristics spoof
-- `/data/local/tmp/kyc_virtcam.imu` — `ax,ay,az,timestampNs` for sensor spoof
+- `/data/local/tmp/kyc_virtcam.imu` — `ax,ay,az,timestampNs`
 - `/data/local/tmp/kyc_virtcam.seam` — loop seam offset hint (ms)
 
-## Lab install
+**Dimension rule:** replacement only applies when the camera session size matches the ring width/height (avoids crashes). Companion `ClipLoopPlayer` must output the same size Open Camera requests (see Pixel baseline profile).
 
-1. Zip `android/magisk-module` (module.prop at zip root) and flash in Magisk.
-2. Reboot, confirm `/data/local/tmp/kyc_virtcam.hook` exists.
-3. Install companion APK, pair, Arm inject, open Open Camera — synthetic feed.
+## Lab install (Pixel)
 
-Without a real Zygisk interceptor binary, the companion still pairs and writes
-frames; third-party apps will not see them until the hook `.so` is provided for
-the lab OEM.
+1. Enable **Zygisk** in Magisk settings.
+2. Flash `kyc_virtcam-magisk.zip` → reboot.
+3. Confirm:
+   - `/data/local/tmp/kyc_virtcam.hook` exists
+   - `/data/local/tmp/kyc_virtcam.log` contains `zygisk lib present`
+4. Desktop: Document Gen → Generate camera feed → Arm → `npm run adb:reverse` → Pair.
+5. Companion: **Arm inject**.
+6. Open **Open Camera**, front lens — preview should show the looping synthetic face.
+7. Disarm inject — physical camera should return (reopen camera if session cached).
+
+## Hook point
+
+- PLT hook: `libmediandk.so` → `AImage_getPlaneData`
+- On plane 0 fetch, if armed + valid KYCV header, overwrite Y (+ UV plane 1) from the ring
+
+Apps that never use MediaNDK `AImage` (pure Java `Image` / proprietary HAL) may not be affected — Plan B/C document OEM gaps.
+
+## Source
+
+| Path | Role |
+|------|------|
+| `src/frame_ring.cpp` | KYCV read + armed gate |
+| `src/module.cpp` | Zygisk entry + PLT hook |
+| `include/zygisk.hpp` | Magisk Zygisk register ABI |
+| `virtcam_hook_contract.h` | Shared C contract header |

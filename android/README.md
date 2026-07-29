@@ -29,6 +29,16 @@ Requires Android SDK 34 + JDK 17.
 powershell -File ../scripts/fetch-gradle-wrapper.ps1
 ```
 
+### Magisk Zygisk virtcam (Plan A)
+
+```powershell
+cd android/magisk-module
+.\build-zygisk.ps1      # needs ANDROID_NDK_HOME
+.\package-magisk.ps1    # → kyc_virtcam-magisk.zip
+```
+
+Flash zip in Magisk (Zygisk on) → reboot → see `android/magisk-module/zygisk/README.md`.
+
 ## Operator flow
 
 1. Desktop: `npm run dev:all` then open Companion Pair for an engagement.

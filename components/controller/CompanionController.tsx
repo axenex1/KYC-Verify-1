@@ -91,6 +91,43 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
     });
   }, []);
 
+  const lastAutoPushUrlRef = useRef<string | null>(null);
+
+  // Plan D: when a clip becomes armed and we already have a pair token, push once.
+  useEffect(() => {
+    if (!pairToken || !armedClip?.clipUrl) return;
+    if (lastAutoPushUrlRef.current === armedClip.clipUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await pushCompanionClipBrowser({
+          sessionId,
+          token: pairToken,
+          clipUrl: armedClip.clipUrl,
+          armed: true,
+        });
+        if (cancelled) return;
+        lastAutoPushUrlRef.current = armedClip.clipUrl;
+        sync.send({
+          type: "inject_state",
+          sessionId,
+          armed: true,
+          mode: "avatar",
+        });
+        setInjectArmedOnPhone(true);
+        auditLogger.log("companion_clip_auto_pushed", {
+          clipUrl: armedClip.clipUrl.slice(0, 96),
+        });
+        toast.success("Armed clip auto-pushed to companion");
+      } catch {
+        /* manual Push button remains available */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [armedClip?.clipUrl, pairToken, sessionId, sync, auditLogger]);
+
   useEffect(() => {
     syncMessageHandlerRef.current = (message: SyncMessage) => {
       void handleSignalingMessage(message);
