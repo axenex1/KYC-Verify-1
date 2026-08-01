@@ -1,0 +1,6 @@
+id=kyc_virtcam
+name=KYC VirtCam Camera2 Hook
+version=v0.1.0
+versionCode=1
+author=khaos
+description=Lab-only Magisk module: replaces front camera ImageReader buffers with KYC Companion NV21 frames from /data/local/tmp/kyc_virtcam.frame when armed.
