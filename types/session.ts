@@ -41,7 +41,7 @@ export const PairedDeviceSchema = z.object({
 
 export const SessionExportSchema = z.object({
   sessionId: z.string().uuid(),
-  environment: z.literal("qa"),
+  environment: z.literal("application"),
   promptSet: z.string(),
   providerId: z.string().optional(),
   customPromptSetId: z.string().uuid().optional(),
@@ -71,12 +71,14 @@ export type PairedDevice = z.infer<typeof PairedDeviceSchema>;
 export type SessionExport = z.infer<typeof SessionExportSchema>;
 
 export interface CreateSessionRequest {
-  mode: "qa";
+  mode: "verification";
   promptSet: string;
 }
 
 export interface CreateSessionResponse {
   sessionId: string;
   createdAt: string;
-  environment: "qa";
+  environment: "application";
+  providerId?: string;
+  customPromptSetId?: string;
 }

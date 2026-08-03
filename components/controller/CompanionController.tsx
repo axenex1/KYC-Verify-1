@@ -172,7 +172,7 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
       ctx.fillRect(0, 0, width, height);
       ctx.fillStyle = "#a1a1aa";
       ctx.font = "24px sans-serif";
-      ctx.fillText("KYC-Verify QA Stream", 40, 60);
+      ctx.fillText("KYC-Verify Stream", 40, 60);
     }
   }, []);
 

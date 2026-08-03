@@ -266,7 +266,11 @@ function buildProfileInsights(
   const completed = sessions.filter((s) => s.export);
   if (completed.length === 0) {
     return [
-      { label: "Sessions", value: "0", detail: "Complete a QA session to populate insights." },
+      {
+        label: "Sessions",
+        value: "0",
+        detail: "Complete a verification session to populate insights.",
+      },
     ];
   }
 

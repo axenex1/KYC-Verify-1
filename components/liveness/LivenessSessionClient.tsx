@@ -8,6 +8,7 @@ import { getProvider, DEFAULT_PROVIDER_ID } from "@/lib/session/providers";
 import type { ProviderEvaluateFn } from "@/lib/session/providers";
 import type { LivenessPrompt, LivenessPromptId } from "@/lib/session/types";
 import { evaluatePrompt } from "@/lib/session/prompts";
+import { CustomPromptSetSchema } from "@/lib/prompt-sets/types";
 
 const LivenessPromptController = dynamic(
   () =>
@@ -55,11 +56,7 @@ export function LivenessSessionClient({ sessionId }: { sessionId: string }) {
         try {
           const res = await fetch(`/api/prompt-sets/${customPromptSetId}`);
           if (res.ok) {
-            const data = (await res.json()) as {
-              id: string;
-              name: string;
-              prompts: { id: string; timeoutMs: number; maxAttempts: number }[];
-            };
+            const data = CustomPromptSetSchema.parse(await res.json());
 
             const { LIVENESS_PROMPTS } = await import("@/lib/session/prompts");
             const resolved: LivenessPrompt[] = data.prompts
@@ -97,7 +94,7 @@ export function LivenessSessionClient({ sessionId }: { sessionId: string }) {
     }
 
     resolve();
-  }, [providerId, customPromptSetId]);
+  }, [providerId, customPromptSetId, hydrate]);
 
   if (!config) {
     return (

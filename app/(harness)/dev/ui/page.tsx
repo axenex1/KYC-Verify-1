@@ -108,7 +108,7 @@ export default function DevUiPage() {
         <CardContent className="grid max-w-sm gap-3">
           <div className="space-y-2">
             <Label htmlFor="demo-input">Session label</Label>
-            <Input id="demo-input" placeholder="qa-session-01" />
+            <Input id="demo-input" placeholder="verification-session-01" />
           </div>
         </CardContent>
       </Card>
@@ -121,7 +121,7 @@ export default function DevUiPage() {
           <Tabs defaultValue="liveness">
             <TabsList>
               <TabsTrigger value="liveness">Liveness</TabsTrigger>
-              <TabsTrigger value="document">Document QA</TabsTrigger>
+              <TabsTrigger value="document">Document Review</TabsTrigger>
             </TabsList>
             <TabsContent value="liveness" className="text-sm text-muted-foreground">
               Prompt sequencing panel content
@@ -158,7 +158,7 @@ export default function DevUiPage() {
               </SheetTrigger>
               <SheetContent>
                 <SheetHeader>
-                  <SheetTitle>QA side panel</SheetTitle>
+                  <SheetTitle>Verification side panel</SheetTitle>
                   <SheetDescription>
                     Dense controls for pairing and transforms.
                   </SheetDescription>

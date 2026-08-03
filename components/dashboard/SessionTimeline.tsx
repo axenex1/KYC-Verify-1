@@ -36,7 +36,7 @@ export function SessionTimeline({ sessions }: SessionTimelineProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-zinc-500">
-            No sessions yet. Complete a QA capture session to see it here.
+            No sessions yet. Complete a verification session to see it here.
           </p>
         </CardContent>
       </Card>

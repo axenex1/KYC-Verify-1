@@ -16,7 +16,10 @@ import { Label } from "@/components/ui/label";
 import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
 import { listProviders } from "@/lib/session/providers";
 import { useSessionStore } from "@/lib/session/store";
-import type { CustomPromptSet } from "@/lib/prompt-sets/types";
+import {
+  CustomPromptSetSchema,
+  type CustomPromptSet,
+} from "@/lib/prompt-sets/types";
 
 const PROVIDERS = listProviders();
 
@@ -39,9 +42,11 @@ export default function HomePage() {
     fetch("/api/prompt-sets")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setCustomPromptSets(data as CustomPromptSet[]);
+        setCustomPromptSets(CustomPromptSetSchema.array().parse(data));
       })
-      .catch(() => {/* ignore — custom sets are optional */});
+      .catch((error) => {
+        console.error("Failed to load custom prompt sets", error);
+      });
   }, []);
 
   const createSession = async (mode: "local" | "companion") => {
@@ -52,7 +57,7 @@ export default function HomePage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        mode: "qa",
+        mode: "verification",
         promptSet: STANDARD_PROMPT_SET,
         providerId: selectedProviderId,
         ...(customPromptSetId ? { customPromptSetId } : {}),
@@ -78,13 +83,13 @@ export default function HomePage() {
     try {
       const data = await createSession("local");
       setSessionId(data.sessionId);
-      toast.success("QA session created");
+      toast.success("Verification session created");
       startTransition(() => {
         router.push(`/verify/${data.sessionId}`);
       });
     } catch {
-      setError("Could not start QA session. Please try again.");
-      toast.error("Could not start QA session");
+      setError("Could not start verification session. Please try again.");
+      toast.error("Could not start verification session");
       setIsStarting(false);
     }
   };
@@ -112,7 +117,7 @@ export default function HomePage() {
       <div className="mb-10 text-center">
         <h1 className="text-4xl font-bold tracking-tight">KYC-Verify</h1>
         <p className="mt-3 text-lg text-muted-foreground">
-          Internal QA harness for testing KYC provider liveness integrations
+          Full verification workspace for identity capture and review workflows
         </p>
       </div>
 
@@ -130,10 +135,10 @@ export default function HomePage() {
         <Card className="transition-shadow hover:shadow-md">
           <CardHeader>
             <Shield className="mb-2 h-6 w-6 text-muted-foreground" />
-            <CardTitle className="text-base">QA Only</CardTitle>
+            <CardTitle className="text-base">Workflow-Ready</CardTitle>
             <CardDescription>
-              Outputs simulated signals for integration testing—not production
-              identity verification.
+              Built as a full application foundation for capture, review, and
+              operational verification workflows.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -142,7 +147,7 @@ export default function HomePage() {
             <ClipboardCheck className="mb-2 h-6 w-6 text-muted-foreground" />
             <CardTitle className="text-base">Audit Export</CardTitle>
             <CardDescription>
-              Download structured JSON with prompt results, document QA state,
+              Download structured JSON with prompt results, document review state,
               metrics, and full event trail.
             </CardDescription>
           </CardHeader>
@@ -243,7 +248,7 @@ export default function HomePage() {
                 Starting...
               </>
             ) : (
-              "Start QA Session"
+              "Start Verification Session"
             )}
           </Button>
           <Button

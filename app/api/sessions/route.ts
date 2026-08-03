@@ -10,7 +10,7 @@ import { STANDARD_PROMPT_SET } from "@/lib/session/prompts";
 import { getProvider, DEFAULT_PROVIDER_ID } from "@/lib/session/providers";
 
 const CreateSessionSchema = z.object({
-  mode: z.literal("qa"),
+  mode: z.literal("verification"),
   promptSet: z.string().default(STANDARD_PROMPT_SET),
   providerId: z.string().optional(),
   customPromptSetId: z.string().uuid().optional(),
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       sessionId,
       createdAt,
-      environment: "qa" as const,
+      environment: "application" as const,
       providerId,
       customPromptSetId: parsed.customPromptSetId,
     });

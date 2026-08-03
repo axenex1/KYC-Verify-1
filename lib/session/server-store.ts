@@ -2,7 +2,7 @@ import type { SessionExport } from "@/types/session";
 
 export interface ServerSession {
   sessionId: string;
-  environment: "qa";
+  environment: "application";
   promptSet: string;
   providerId?: string;
   customPromptSetId?: string;
@@ -20,7 +20,7 @@ export function createServerSession(
 ): ServerSession {
   const session: ServerSession = {
     sessionId,
-    environment: "qa",
+    environment: "application",
     promptSet,
     providerId: options?.providerId,
     customPromptSetId: options?.customPromptSetId,

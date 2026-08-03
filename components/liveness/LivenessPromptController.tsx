@@ -245,10 +245,10 @@ export function LivenessPromptController({
 
         const exportPayload: SessionExport = {
           sessionId,
-          environment: "qa",
+          environment: "application",
           promptSet: promptSetLabel,
-          providerId: providerId,
-          customPromptSetId: customPromptSetId,
+          providerId,
+          customPromptSetId,
           distortionMode:
             activeDistortionMode !== "none" ? activeDistortionMode : undefined,
           createdAt: new Date().toISOString(),
@@ -395,7 +395,7 @@ export function LivenessPromptController({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `kyc-qa-session-${sessionId}.json`;
+    anchor.download = `kyc-session-${sessionId}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   };
@@ -409,8 +409,8 @@ export function LivenessPromptController({
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Simulated liveness signals captured for QA integration testing.
-              Results are not valid for production KYC verification.
+              Verification capture session completed. Export includes prompts,
+              metrics, and timeline events for workflow review.
             </p>
             <div className="space-y-2">
               {exportData.promptResults.map((result) => (
@@ -453,8 +453,8 @@ export function LivenessPromptController({
         <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-100">
           <Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            Mobile QA mode — test on your phone browser. Use rear camera toggle
-            for document-style capture flows.
+            Mobile mode — continue the verification flow on your phone browser.
+            Use rear camera toggle for document-style capture flows.
           </p>
         </div>
       )}
@@ -519,6 +519,7 @@ export function LivenessPromptController({
         </div>
       ) : (
         <DocumentQAPanel
+          sessionId={sessionId}
           auditLogger={auditLogger}
           onStateChange={(state) => {
             setDocumentQAState(state);

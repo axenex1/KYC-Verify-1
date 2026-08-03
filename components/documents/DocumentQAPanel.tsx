@@ -9,6 +9,8 @@ import {
   DEFAULT_DOCUMENT_TRANSFORM,
 } from "./TransformControls";
 import { ConfirmTransformDialog } from "./ConfirmTransformDialog";
+import { DocumentGenerationWorkspace } from "./DocumentGenerationWorkspace";
+import { Separator } from "@/components/ui/separator";
 import {
   DEFAULT_DOCUMENT_TEMPLATE_ID,
   DOCUMENT_TEMPLATES,
@@ -17,6 +19,7 @@ import type { DocumentTransform } from "@/lib/documents/transforms";
 import type { ClientAuditLogger } from "@/lib/audit/logger";
 
 interface DocumentQAPanelProps {
+  sessionId: string;
   auditLogger: ClientAuditLogger;
   onStateChange?: (state: DocumentQAState) => void;
   onTransformProposed?: (transform: DocumentTransform) => void;
@@ -30,6 +33,7 @@ export interface DocumentQAState {
 }
 
 export function DocumentQAPanel({
+  sessionId,
   auditLogger,
   onStateChange,
   onTransformProposed,
@@ -122,7 +126,7 @@ export function DocumentQAPanel({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Document Capture QA</CardTitle>
+          <CardTitle className="text-base">Document Capture Review</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <DocumentTemplatePicker
@@ -140,6 +144,8 @@ export function DocumentQAPanel({
             onRequestApply={handleRequestApply}
             onReset={handleReset}
           />
+          <Separator />
+          <DocumentGenerationWorkspace sessionId={sessionId} auditLogger={auditLogger} />
         </CardContent>
       </Card>
 

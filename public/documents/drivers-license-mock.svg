@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300">
   <rect width="480" height="300" fill="#065f46" rx="12"/>
   <rect x="8" y="8" width="464" height="284" fill="#ecfdf5" rx="8"/>
-  <text x="24" y="36" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#065f46">DRIVER LICENSE  QA MOCK</text>
+  <text x="24" y="36" font-family="Arial,sans-serif" font-size="14" font-weight="bold" fill="#065f46">DRIVER LICENSE  DEMO MOCK</text>
   <text x="24" y="54" font-family="Arial,sans-serif" font-size="10" fill="#64748b">NOT VALID FOR IDENTIFICATION</text>
   <rect x="24" y="70" width="90" height="110" fill="#cbd5e1" rx="4"/>
   <text x="69" y="130" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#64748b">PHOTO</text>
   <text x="130" y="90" font-family="Arial,sans-serif" font-size="10" fill="#64748b">Name</text>
-  <text x="130" y="110" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#0f172a">QA TEST USER</text>
+  <text x="130" y="110" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#0f172a">DEMO TEST USER</text>
   <text x="130" y="140" font-family="Arial,sans-serif" font-size="10" fill="#64748b">Address</text>
-  <text x="130" y="158" font-family="Arial,sans-serif" font-size="12" fill="#0f172a">123 Test Street, QA City</text>
+  <text x="130" y="158" font-family="Arial,sans-serif" font-size="12" fill="#0f172a">123 Test Street, Demo City</text>
   <text x="130" y="190" font-family="Arial,sans-serif" font-size="10" fill="#64748b">DL</text>
-  <text x="130" y="210" font-family="monospace" font-size="14" fill="#0f172a">QA-0000-0000</text>
+  <text x="130" y="210" font-family="monospace" font-size="14" fill="#0f172a">DEMO-0000-0000</text>
   <text x="300" y="90" font-family="Arial,sans-serif" font-size="10" fill="#64748b">DOB</text>
   <text x="300" y="110" font-family="Arial,sans-serif" font-size="12" fill="#0f172a">01/01/1990</text>
   <text x="300" y="140" font-family="Arial,sans-serif" font-size="10" fill="#64748b">EXP</text>

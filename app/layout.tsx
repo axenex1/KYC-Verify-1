@@ -12,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "KYC-Verify | QA Liveness Harness",
+  title: "KYC-Verify | Verification Platform",
   description:
-    "Internal QA tool for testing KYC provider liveness integrations with simulated behavioral signals.",
+    "Desktop-first verification platform for identity capture, document review, companion orchestration, and operational analytics.",
 };
 
 export const viewport: Viewport = {

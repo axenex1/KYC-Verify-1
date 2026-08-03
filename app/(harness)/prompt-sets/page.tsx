@@ -22,8 +22,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { CustomPromptSet, CustomPromptItem } from "@/lib/prompt-sets/types";
-import { AVAILABLE_PROMPT_IDS } from "@/lib/prompt-sets/types";
+import {
+  AVAILABLE_PROMPT_IDS,
+  CustomPromptSetSchema,
+  type CustomPromptSet,
+  type CustomPromptItem,
+} from "@/lib/prompt-sets/types";
 
 const PROMPT_LABELS: Record<string, string> = {
   center_face: "Center face",
@@ -64,8 +68,8 @@ export default function PromptSetsPage() {
     try {
       const res = await fetch("/api/prompt-sets");
       if (res.ok) {
-        const data = (await res.json()) as { promptSets: CustomPromptSet[] };
-        setSets(data.promptSets);
+        const data = CustomPromptSetSchema.array().parse(await res.json());
+        setSets(data);
       }
     } catch {
       toast.error("Failed to load prompt sets");

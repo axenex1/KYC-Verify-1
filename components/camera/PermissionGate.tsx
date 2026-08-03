@@ -141,8 +141,8 @@ export function PermissionGate({
           Camera Access Required
         </CardTitle>
         <CardDescription>
-          This QA harness needs your webcam to simulate liveness prompts for
-          integration testing.
+          This verification workflow needs your webcam for capture and session
+          processing.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

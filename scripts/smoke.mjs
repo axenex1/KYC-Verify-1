@@ -24,7 +24,7 @@ async function checkSessionCreate() {
   const res = await fetch(`${base}/api/sessions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode: "qa", promptSet: "standard" }),
+    body: JSON.stringify({ mode: "verification", promptSet: "standard" }),
   });
   if (!res.ok) {
     throw new Error(`POST /api/sessions → ${res.status}`);

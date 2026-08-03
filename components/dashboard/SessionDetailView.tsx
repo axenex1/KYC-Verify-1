@@ -53,7 +53,7 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `kyc-qa-session-${sessionId}.json`;
+    anchor.download = `kyc-session-${sessionId}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   };
@@ -195,7 +195,7 @@ export function SessionDetailView({ sessionId }: SessionDetailViewProps) {
       {(exportData.pairedDevice || exportData.documentQA) && (
         <Card>
           <CardHeader>
-            <CardTitle>Companion & Document QA</CardTitle>
+            <CardTitle>Companion & Document Review</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2 text-sm">
             {exportData.pairedDevice && (
