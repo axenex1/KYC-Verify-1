@@ -42,12 +42,12 @@ export const USE_CASES: UseCase[] = [
     id: "inject",
     title: "Inject into a camera",
     copy: "Push a saved document or avatar into OBS / virtcam.",
-    href: "/inject?source=library&task=inject",
-    cta: "Open Injector",
+    href: "/library?task=inject",
+    cta: "Open Library",
     steps: [
-      "Pick a saved item in Library, or use one just generated.",
-      "Open Injector with Library as the source.",
-      "Arm the clip and start the virtual camera.",
+      "Pick a saved pack in Library.",
+      "Arm the clip from the pack.",
+      "Injector lands when that surface is on this branch.",
     ],
   },
   {

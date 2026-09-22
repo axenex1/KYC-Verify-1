@@ -6,11 +6,13 @@ import { usePathname } from "next/navigation";
 import {
   Crosshair,
   FileWarning,
+  FolderOpen,
   Home,
   Library,
   PlusCircle,
   Settings,
   ShieldAlert,
+  Sparkles,
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +28,18 @@ const navItems = [
     label: "Mission Control",
     icon: Home,
     match: (p: string) => p === "/",
+  },
+  {
+    href: "/forge",
+    label: "Forge",
+    icon: Sparkles,
+    match: (p: string) => p.startsWith("/forge"),
+  },
+  {
+    href: "/library",
+    label: "Library",
+    icon: FolderOpen,
+    match: (p: string) => p.startsWith("/library"),
   },
   {
     href: "/targets",

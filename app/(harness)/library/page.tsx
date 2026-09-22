@@ -13,13 +13,10 @@ export default function LibraryPage() {
           <Link href="/forge" className="text-zinc-400 hover:text-white">
             Forge
           </Link>
-          <Link href="/inject" className="text-red-400 hover:text-white">
-            Injector
-          </Link>
         </div>
       </div>
       <p className="mb-8 max-w-sm text-sm leading-6 text-zinc-500">
-        Documents, stills, and videos. Inject sends the item to OBS.
+        Identity packs: documents, stills, and videos. Arm from a pack row.
       </p>
       <MediaLibraryPanel />
     </PageBleed>

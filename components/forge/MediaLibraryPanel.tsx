@@ -78,7 +78,7 @@ export function MediaLibraryPanel({ packId }: { packId?: string | null } = {}) {
     (id: string) => {
       armLibraryItem(id);
       toast.success("Armed for injector");
-      router.push("/inject?source=library");
+      router.push("/library");
     },
     [router]
   );
@@ -86,8 +86,8 @@ export function MediaLibraryPanel({ packId }: { packId?: string | null } = {}) {
   const sendPack = useCallback(
     async (id: string) => {
       await armPack(id);
-      toast.success("Pack armed for injector");
-      router.push("/inject?source=library");
+      toast.success("Pack armed");
+      router.push("/library");
     },
     [router]
   );

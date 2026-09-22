@@ -31,9 +31,6 @@ export default function ForgePage() {
               <Link href="/library" className="block text-zinc-400 hover:text-white">
                 Open library
               </Link>
-              <Link href="/inject?source=library" className="block text-red-400 hover:text-white">
-                Inject now
-              </Link>
             </div>
           ) : null}
         </div>
