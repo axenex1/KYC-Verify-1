@@ -1,0 +1,14 @@
+.particle-image-root {
+  position: relative;
+  overflow: hidden;
+}
+
+.particle-image-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.particle-image-content {
+  position: relative;
+  z-index: 10;
+}

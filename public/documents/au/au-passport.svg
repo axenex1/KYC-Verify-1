@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="704" viewBox="0 0 1000 704">
+  <defs>
+    <linearGradient id="passBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d7e2ef"/>
+      <stop offset="1" stop-color="#f4f7fb"/>
+    </linearGradient>
+    <pattern id="passGuill" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="9" cy="9" r="8" fill="none" stroke="#8aa0b8" stroke-width="0.35" opacity="0.28"/>
+    </pattern>
+  </defs>
+  <rect width="1000" height="704" rx="16" fill="#0b1b33"/>
+  <rect x="16" y="16" width="968" height="672" rx="10" fill="url(#passBg)"/>
+  <rect x="16" y="16" width="968" height="672" rx="10" fill="url(#passGuill)"/>
+  <rect x="16" y="16" width="968" height="78" fill="#0b1b33"/>
+  <text x="40" y="48" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#d4af37">AUSTRALIA</text>
+  <text x="40" y="78" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="700" fill="#f8fafc">PASSPORT</text>
+  <text x="960" y="52" text-anchor="end" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#d4af37">TYPE P  ·  CODE AUS</text>
+  <text x="960" y="74" text-anchor="end" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#94a3b8">authorized test artefact</text>
+  <rect x="40" y="118" width="236" height="300" rx="4" fill="#c5d0dc"/>
+  <text x="158" y="276" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#5b6b7c">PHOTO</text>
+  <text x="308" y="132" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">SURNAME / NOM</text>
+  <text x="308" y="204" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">GIVEN NAMES / PRÉNOMS</text>
+  <text x="308" y="276" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">NATIONALITY / NATIONALITÉ</text>
+  <text x="308" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">DATE OF BIRTH</text>
+  <text x="560" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">SEX</text>
+  <text x="700" y="348" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">DATE OF EXPIRY</text>
+  <text x="308" y="420" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748b">PASSPORT NO.</text>
+  <rect x="28" y="590" width="944" height="86" rx="6" fill="#e8eef5"/>
+  <text x="40" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#64748b">MACHINE READABLE ZONE</text>
+</svg>
