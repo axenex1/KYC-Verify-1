@@ -153,6 +153,15 @@ function stampRun(
   }
 }
 
+function fitLetters(text: string): string {
+  return text
+    .toUpperCase()
+    .replace(/[^A-Z '\-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 32);
+}
+
 function stampName(
   ctx: CanvasRenderingContext2D,
   plate: HTMLCanvasElement,

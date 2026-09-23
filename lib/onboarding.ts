@@ -39,17 +39,17 @@ export const USE_CASES: UseCase[] = [
     ],
   },
   {
-    id: "inject",
-    title: "Inject into a camera",
-    copy: "Push a saved document or avatar into OBS / virtcam.",
-    href: "/library?task=inject",
-    cta: "Open Library",
-    steps: [
-      "Pick a saved pack in Library.",
-      "Arm the clip from the pack.",
-      "Injector lands when that surface is on this branch.",
-    ],
-  },
+      id: "inject",
+      title: "Inject into a camera",
+      copy: "Arm a pack, run the desktop loop, optionally pair companion. Zygisk is optional lab phone.",
+      href: "/inject?task=inject",
+      cta: "Open Injector",
+      steps: [
+        "Arm a pack video from Library (or Forge).",
+        "Start desktop loop for OBS / virtcam.",
+        "Optional: companion pair. Zygisk only on rooted lab devices.",
+      ],
+    },
   {
     id: "liveness",
     title: "Test liveness",

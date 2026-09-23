@@ -10,14 +10,17 @@ export default function LibraryPage() {
       <div className="mb-8 flex items-baseline justify-between gap-6">
         <h1 className="text-2xl font-semibold tracking-tight text-white">Library</h1>
         <div className="flex items-center gap-6 text-sm">
-          <Link href="/forge" className="text-zinc-400 hover:text-white">
-            Forge
-          </Link>
-        </div>
-      </div>
-      <p className="mb-8 max-w-sm text-sm leading-6 text-zinc-500">
-        Identity packs: documents, stills, and videos. Arm from a pack row.
-      </p>
+                  <Link href="/forge" className="text-zinc-400 hover:text-white">
+                    Forge
+                  </Link>
+                  <Link href="/inject" className="text-red-400 hover:text-white">
+                    Injector
+                  </Link>
+                </div>
+              </div>
+              <p className="mb-8 max-w-sm text-sm leading-6 text-zinc-500">
+                Identity packs. Arm opens Injector (desktop loop → optional companion → optional Zygisk).
+              </p>
       <MediaLibraryPanel />
     </PageBleed>
   );

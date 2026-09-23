@@ -10,6 +10,7 @@ import {
   Home,
   Library,
   PlusCircle,
+  Radio,
   Settings,
   ShieldAlert,
   Sparkles,
@@ -36,17 +37,23 @@ const navItems = [
     match: (p: string) => p.startsWith("/forge"),
   },
   {
-    href: "/library",
-    label: "Library",
-    icon: FolderOpen,
-    match: (p: string) => p.startsWith("/library"),
-  },
-  {
-    href: "/targets",
-    label: "Targets",
-    icon: Target,
-    match: (p: string) => p.startsWith("/targets"),
-  },
+      href: "/library",
+      label: "Library",
+      icon: FolderOpen,
+      match: (p: string) => p.startsWith("/library"),
+    },
+    {
+      href: "/inject",
+      label: "Injector",
+      icon: Radio,
+      match: (p: string) => p.startsWith("/inject"),
+    },
+    {
+      href: "/targets",
+      label: "Targets",
+      icon: Target,
+      match: (p: string) => p.startsWith("/targets"),
+    },
   {
     href: "/engagements/new",
     label: "Engagements",
@@ -196,8 +203,8 @@ export function AppShell({ children }: AppShellProps) {
               KYC_BREACH
             </span>
             <span className="ml-1 hidden font-mono text-[10px] uppercase tracking-widest text-muted-foreground sm:inline">
-              //CONSOLE
-            </span>
+                          {"//CONSOLE"}
+                        </span>
           </div>
         </Link>
 

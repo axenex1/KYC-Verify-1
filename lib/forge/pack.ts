@@ -35,7 +35,7 @@ function toRecord(pack: IdentityPack): IdentityPackRecord {
 function fromRecord(row: IdentityPackRecord): IdentityPack {
   return {
     ...row,
-    identity: row.identity as ForgeIdentity,
+    identity: row.identity as unknown as ForgeIdentity,
     templateIds: row.templateIds as ForgeTemplateId[],
   };
 }

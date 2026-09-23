@@ -75,22 +75,22 @@ export function MediaLibraryPanel({ packId }: { packId?: string | null } = {}) {
   );
 
   const sendToInjector = useCallback(
-    (id: string) => {
-      armLibraryItem(id);
-      toast.success("Armed for injector");
-      router.push("/library");
-    },
-    [router]
-  );
+      (id: string) => {
+        armLibraryItem(id);
+        toast.success("Armed → injector");
+        router.push("/inject?source=library");
+      },
+      [router]
+    );
 
-  const sendPack = useCallback(
-    async (id: string) => {
-      await armPack(id);
-      toast.success("Pack armed");
-      router.push("/library");
-    },
-    [router]
-  );
+    const sendPack = useCallback(
+      async (id: string) => {
+        await armPack(id);
+        toast.success("Pack armed → injector");
+        router.push("/inject?source=library");
+      },
+      [router]
+    );
 
   const thumbFor = useCallback(
     (id?: string) => items.find((item) => item.id === id)?.url ?? null,

@@ -26,13 +26,16 @@ export default function ForgePage() {
           </div>
           <TaskCoach forUseCase={["forge", "avatar"]} />
           {forgedDoc ? (
-            <div className="space-y-2 text-sm">
-              <div className="text-emerald-400">{forgedDoc.templateId} saved</div>
-              <Link href="/library" className="block text-zinc-400 hover:text-white">
-                Open library
-              </Link>
-            </div>
-          ) : null}
+                      <div className="space-y-2 text-sm">
+                        <div className="text-emerald-400">{forgedDoc.templateId} saved</div>
+                        <Link href="/library" className="block text-zinc-400 hover:text-white">
+                          Open library
+                        </Link>
+                        <Link href="/inject?source=library" className="block text-red-400 hover:text-white">
+                          Injector
+                        </Link>
+                      </div>
+                    ) : null}
         </div>
       }
     >
