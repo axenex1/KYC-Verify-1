@@ -62,25 +62,31 @@ export function useWebRtcSignaling(
   }, [sessionId, send]);
 
   const createOffer = useCallback(
-    async (streamType: StreamType, localStream?: MediaStream) => {
-      const pc = getPeer(streamType);
-      if (localStream) {
-        localStream.getTracks().forEach((track) => {
-          pc.addTrack(track, localStream);
-        });
-      }
+      async (streamType: StreamType, localStream?: MediaStream) => {
+        const pc = getPeer(streamType);
+        if (localStream) {
+          const senders = pc.getSenders();
+          for (const track of localStream.getTracks()) {
+            const existing = senders.find((s) => s.track?.kind === track.kind);
+            if (existing) {
+              await existing.replaceTrack(track);
+            } else {
+              pc.addTrack(track, localStream);
+            }
+          }
+        }
 
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      send({
-        type: "stream_offer",
-        sessionId,
-        sdp: offer.sdp ?? "",
-        streamType,
-      });
-    },
-    [getPeer, send, sessionId]
-  );
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        send({
+          type: "stream_offer",
+          sessionId,
+          sdp: offer.sdp ?? "",
+          streamType,
+        });
+      },
+      [getPeer, send, sessionId]
+    );
 
   const handleSignalingMessage = useCallback(
     async (message: SyncMessage) => {
@@ -119,12 +125,20 @@ export function useWebRtcSignaling(
   );
 
   const addLocalStream = useCallback(
-    (streamType: StreamType, stream: MediaStream) => {
-      const pc = getPeer(streamType);
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-    },
-    [getPeer]
-  );
+      async (streamType: StreamType, stream: MediaStream) => {
+        const pc = getPeer(streamType);
+        const senders = pc.getSenders();
+        for (const track of stream.getTracks()) {
+          const existing = senders.find((s) => s.track?.kind === track.kind);
+          if (existing) {
+            await existing.replaceTrack(track);
+          } else {
+            pc.addTrack(track, stream);
+          }
+        }
+      },
+      [getPeer]
+    );
 
   const closeAll = useCallback(() => {
     peersRef.current.forEach((pc) => pc.close());

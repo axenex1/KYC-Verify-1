@@ -14,12 +14,18 @@ import {
   DOCUMENT_TEMPLATES,
 } from "@/lib/documents/templates";
 import { DEFAULT_DOCUMENT_TRANSFORM } from "@/components/documents/TransformControls";
+import { subscribeInjectOutbound } from "@/lib/inject/outbound-bus";
 
 interface CompanionControllerProps {
   sessionId: string;
+  /** Prefer this stream for desktop_to_mobile (e.g. Injector loop). */
+  preferredOutboundStream?: MediaStream | null;
 }
 
-export function CompanionController({ sessionId }: CompanionControllerProps) {
+export function CompanionController({
+  sessionId,
+  preferredOutboundStream = null,
+}: CompanionControllerProps) {
   const auditLogger = useMemo(() => new ClientAuditLogger(), []);
   const outboundCanvasRef = useRef<HTMLCanvasElement>(null);
   const outboundStreamRef = useRef<MediaStream | null>(null);
@@ -40,6 +46,14 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   const [companionFacing, setCompanionFacing] = useState<CameraFacing>("user");
   const [mobileConnected, setMobileConnected] = useState(false);
   const [pairedAt, setPairedAt] = useState<string | null>(null);
+  const [busOutbound, setBusOutbound] = useState<MediaStream | null>(null);
+  const [outboundSource, setOutboundSource] = useState<"inject" | "document" | "none">(
+    "none"
+  );
+
+  useEffect(() => subscribeInjectOutbound(setBusOutbound), []);
+
+  const resolvedOutbound = preferredOutboundStream || busOutbound;
 
   const onPeerDisconnected = useCallback(() => {
     setMobileConnected(false);
@@ -131,25 +145,56 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   }, [setHandlers]);
 
   useEffect(() => {
-    if (sync.connectionState !== "paired" || !mobileConnected) return;
+      if (sync.connectionState !== "paired" || !mobileConnected) return;
+      if (!shouldInitiate("desktop_to_mobile")) return;
 
-    if (shouldInitiate("desktop_to_mobile")) {
       const canvas = outboundCanvasRef.current;
-      if (!canvas) return;
+          let stream = resolvedOutbound;
+          let source: "inject" | "document" | "none" = resolvedOutbound ? "inject" : "none";
 
-      if (!outboundStreamRef.current) {
-        outboundStreamRef.current = canvas.captureStream(15);
-        addLocalStream("desktop_to_mobile", outboundStreamRef.current);
-      }
-      void createOffer("desktop_to_mobile", outboundStreamRef.current);
-    }
-  }, [
-    sync.connectionState,
-    mobileConnected,
-    shouldInitiate,
-    createOffer,
-    addLocalStream,
-  ]);
+          if (!stream && canvas) {
+            if (
+              !outboundStreamRef.current ||
+              outboundStreamRef.current.getVideoTracks().every((t) => t.readyState === "ended")
+            ) {
+              outboundStreamRef.current = canvas.captureStream(15);
+            }
+            stream = outboundStreamRef.current;
+            source = "document";
+          }
+
+          if (!stream) {
+            setOutboundSource("none");
+            return;
+          }
+
+          // Prefer inject stream identity when present.
+          if (resolvedOutbound) {
+            outboundStreamRef.current = resolvedOutbound;
+            stream = resolvedOutbound;
+            source = "inject";
+          }
+
+          setOutboundSource(source);
+          void (async () => {
+            await addLocalStream("desktop_to_mobile", stream!);
+            await createOffer("desktop_to_mobile", stream!);
+            auditLogger.log("desktop_outbound_offered", {
+              sessionId,
+              source,
+              trackCount: stream!.getTracks().length,
+            });
+          })();
+    }, [
+      sync.connectionState,
+      mobileConnected,
+      shouldInitiate,
+      createOffer,
+      addLocalStream,
+      resolvedOutbound,
+      auditLogger,
+      sessionId,
+    ]);
 
   const updateOutboundCanvas = useCallback(() => {
     const canvas = outboundCanvasRef.current;
@@ -190,8 +235,19 @@ export function CompanionController({ sessionId }: CompanionControllerProps) {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-white/10 px-4 py-3 font-mono text-[11px] text-zinc-400">
+          Outbound source:{" "}
+          <span className="text-zinc-200">
+            {outboundSource === "inject"
+              ? "Injector desktop loop"
+              : outboundSource === "document"
+                ? "Document / QA canvas fallback"
+                : "waiting"}
+          </span>
+          {resolvedOutbound ? " · inject stream live" : " · no inject stream yet"}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
         <PairingPanel
           sessionId={sessionId}
           token={pairToken}

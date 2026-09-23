@@ -16,6 +16,8 @@ import {
   type InjectStage,
   type InjectStageStatus,
 } from "@/lib/inject/pipeline";
+import { setInjectOutboundStream } from "@/lib/inject/outbound-bus";
+import { CompanionController } from "@/components/controller/CompanionController";
 
 function statusClass(status: InjectStageStatus): string {
   switch (status) {
@@ -41,6 +43,7 @@ export function InjectorStudio() {
   const [companionSessionId, setCompanionSessionId] = useState<string | null>(null);
   const [armingSession, setArmingSession] = useState(false);
   const [serverArmed, setServerArmed] = useState<string | null>(null);
+  const [liveStream, setLiveStream] = useState<MediaStream | null>(null);
 
   const stages: InjectStage[] = useMemo(
     () =>
@@ -57,6 +60,8 @@ export function InjectorStudio() {
     loopRef.current = null;
     if (hostRef.current) hostRef.current.innerHTML = "";
     setLoopRunning(false);
+    setLiveStream(null);
+    setInjectOutboundStream(null);
   }, []);
 
   const loadArmed = useCallback(async () => {
@@ -127,8 +132,10 @@ export function InjectorStudio() {
         handle.canvas.className = "h-full w-full object-contain";
         hostRef.current.appendChild(handle.canvas);
       }
+      setLiveStream(handle.stream);
+      setInjectOutboundStream(handle.stream);
       setLoopRunning(true);
-      toast.success("Desktop loop running — use this canvas / captureStream for OBS");
+      toast.success("Desktop loop live — published for companion desktop_to_mobile");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Loop failed");
     }
@@ -276,20 +283,16 @@ export function InjectorStudio() {
         </div>
 
         {companionSessionId ? (
-          <div className="mt-4 rounded-2xl border border-white/10 px-4 py-3 text-sm text-zinc-300">
-            Companion session{" "}
-            <span className="font-mono text-xs text-zinc-400">{companionSessionId.slice(0, 12)}</span>
-            <div className="mt-2 flex flex-wrap gap-4 text-sm">
-              <Link
-                href={`/controller/${companionSessionId}`}
-                className="text-red-400 hover:text-white"
-              >
-                Open controller pair
-              </Link>
-              <span className="text-zinc-600">
-                WebRTC desktop_to_mobile — feed still comes from this loop when wired next.
-              </span>
-            </div>
+          <div className="mt-8 space-y-4">
+            <div className="font-mono text-[10px] tracking-widest text-zinc-500">COMPANION</div>
+            <p className="text-xs leading-5 text-zinc-500">
+              Same session as controller pair. When the phone pairs, outbound uses the Injector loop
+              stream if running; otherwise the document canvas fallback.
+            </p>
+            <CompanionController
+              sessionId={companionSessionId}
+              preferredOutboundStream={liveStream}
+            />
           </div>
         ) : null}
 
